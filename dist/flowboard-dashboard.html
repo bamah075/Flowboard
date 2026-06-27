@@ -6,237 +6,433 @@
 <title>FlowBoard — My Projects</title>
 <style>
 :root {
-  color-scheme: light;
-  --orange: #F06A35;
-  --orange-light: #fff5f2;
-  --purple: #6366f1;
-  --green: #10b981;
-  --yellow: #f59e0b;
-  --red: #ef4444;
-  --bg: #f3f4f6;
-  --card: #ffffff;
-  --border: #e5e7eb;
-  --text: #111827;
-  --text2: #6b7280;
-  --radius: 12px;
+  --bg:       #08080d;
+  --surface:  #0f0f18;
+  --card:     #13131f;
+  --card2:    #1a1a2e;
+  --border:   rgba(255,255,255,.08);
+  --border2:  rgba(255,255,255,.13);
+  --orange:   #F06A35;
+  --orange2:  #d95f2c;
+  --purple:   #6366f1;
+  --teal:     #10b981;
+  --yellow:   #f59e0b;
+  --red:      #ef4444;
+  --text:     #f0f0f8;
+  --text2:    rgba(255,255,255,.45);
+  --text3:    rgba(255,255,255,.25);
+  --radius:   14px;
+  --glow-o:   rgba(240,106,53,.18);
+  --glow-p:   rgba(99,102,241,.15);
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg); color: var(--text);
+  min-height: 100vh;
+  background-image:
+    radial-gradient(ellipse 60% 40% at 15% 10%, var(--glow-o), transparent),
+    radial-gradient(ellipse 55% 45% at 85% 85%, var(--glow-p), transparent),
+    radial-gradient(ellipse 30% 30% at 50% 50%, rgba(16,185,129,.06), transparent);
+  background-attachment: fixed;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 3px; }
 
 /* ── HEADER ── */
 .header {
-  background: #fff; border-bottom: 1px solid var(--border);
-  padding: 0 32px; height: 58px;
+  background: rgba(8,8,13,.85);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px; height: 60px;
   display: flex; align-items: center; gap: 12px;
   position: sticky; top: 0; z-index: 100;
-  box-shadow: 0 1px 6px rgba(0,0,0,.06);
 }
-.logo { display: flex; align-items: center; gap: 9px; }
-.logo-icon { width: 30px; height: 30px; }
+.logo { display: flex; align-items: center; gap: 9px; text-decoration: none; }
+.logo-icon { width: 32px; height: 32px; flex-shrink: 0; }
 .logo-text {
-  font-size: 18px; font-weight: 900;
-  background: linear-gradient(135deg, #6366f1 0%, #F06A35 60%, #f59e0b 100%);
+  font-size: 18px; font-weight: 900; letter-spacing: -.3px;
+  background: linear-gradient(120deg, #fff 0%, var(--orange) 70%, var(--yellow) 100%);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
-.header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
-.btn { border: none; border-radius: 9px; cursor: pointer; font-size: 13px; font-weight: 700; padding: 8px 16px; transition: all .15s; display: flex; align-items: center; gap: 6px; }
-.btn-primary { background: var(--orange); color: #fff; }
-.btn-primary:hover { background: #d95f2c; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(240,106,53,.3); }
-.btn-ghost { background: #f3f4f6; color: var(--text2); }
-.btn-ghost:hover { background: #e5e7eb; color: var(--text); }
+.sep { color: var(--border2); font-size: 18px; margin: 0 2px; }
+.breadcrumb { font-size: 13px; font-weight: 600; color: var(--text2); }
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
 
-/* ── MAIN ── */
-.main { max-width: 1100px; margin: 0 auto; padding: 36px 24px 60px; }
-
-.section-title {
-  font-size: 13px; font-weight: 800; text-transform: uppercase;
-  letter-spacing: .6px; color: var(--text2); margin-bottom: 16px;
-  display: flex; align-items: center; gap: 10px;
+.btn {
+  border: none; border-radius: 10px; cursor: pointer;
+  font-size: 13px; font-weight: 700; padding: 8px 16px;
+  transition: all .15s; display: inline-flex; align-items: center; gap: 6px;
+  letter-spacing: -.1px;
 }
-.section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.btn-primary {
+  background: linear-gradient(135deg, var(--orange), #e05528);
+  color: #fff; box-shadow: 0 0 0 1px rgba(240,106,53,.3), 0 4px 16px rgba(240,106,53,.25);
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 0 0 1px rgba(240,106,53,.4), 0 8px 24px rgba(240,106,53,.35); }
+.btn-ghost {
+  background: rgba(255,255,255,.06); color: var(--text2);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { background: rgba(255,255,255,.1); color: var(--text); border-color: var(--border2); }
 
-/* ── STATS ROW ── */
-.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 36px; }
+/* ── HERO ── */
+.hero {
+  padding: 52px 32px 40px;
+  max-width: 1180px; margin: 0 auto;
+}
+.hero-label {
+  font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--orange); margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+}
+.hero-label::before { content: ''; width: 20px; height: 2px; background: var(--orange); border-radius: 1px; }
+.hero h1 {
+  font-size: 42px; font-weight: 900; letter-spacing: -1.2px; line-height: 1.1;
+  margin-bottom: 12px; max-width: 540px;
+}
+.hero h1 em { font-style: normal; color: var(--orange); }
+.hero p { font-size: 15px; color: var(--text2); line-height: 1.6; max-width: 420px; }
+
+/* ── STATS ── */
+.stats-row {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+  max-width: 1180px; margin: 0 auto 48px; padding: 0 32px;
+}
 .stat-card {
-  background: var(--card); border-radius: var(--radius);
-  padding: 18px 20px; border: 1px solid var(--border);
-  box-shadow: 0 1px 3px rgba(0,0,0,.05);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  position: relative; overflow: hidden;
+  transition: border-color .2s, transform .15s;
 }
-.stat-value { font-size: 28px; font-weight: 900; margin-bottom: 4px; }
-.stat-label { font-size: 12px; color: var(--text2); font-weight: 600; }
+.stat-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+.stat-card::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.03), transparent);
+  pointer-events: none;
+}
+.stat-glow {
+  position: absolute; width: 60px; height: 60px;
+  border-radius: 50%; opacity: .35; top: -10px; right: -10px;
+  filter: blur(20px); pointer-events: none;
+}
+.stat-value { font-size: 32px; font-weight: 900; letter-spacing: -1px; margin-bottom: 3px; }
+.stat-label { font-size: 11px; color: var(--text2); font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
+
+/* ── SECTION ── */
+.section { max-width: 1180px; margin: 0 auto 48px; padding: 0 32px; }
+.section-head {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 20px;
+}
+.section-title {
+  font-size: 11px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .8px; color: var(--text3);
+  white-space: nowrap;
+}
+.section-line { flex: 1; height: 1px; background: var(--border); }
+.section-count {
+  font-size: 11px; font-weight: 700; color: var(--text3);
+  background: rgba(255,255,255,.05); border: 1px solid var(--border);
+  padding: 2px 8px; border-radius: 20px;
+}
 
 /* ── PROJECT GRID ── */
-.projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-bottom: 40px; }
+.projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 14px; }
 
 .project-card {
-  background: var(--card); border-radius: var(--radius);
+  background: var(--card);
   border: 1px solid var(--border);
-  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  border-radius: var(--radius);
   overflow: hidden; cursor: pointer;
-  transition: transform .15s, box-shadow .15s;
+  transition: transform .15s, box-shadow .15s, border-color .15s;
   display: flex; flex-direction: column;
-  text-decoration: none; color: inherit;
+  position: relative;
 }
-.project-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.1); }
+.project-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--border2);
+  box-shadow: 0 12px 40px rgba(0,0,0,.4), 0 0 0 1px rgba(255,255,255,.06);
+}
+.project-card::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.025), transparent 60%);
+  pointer-events: none;
+}
 
-.project-banner { height: 6px; }
+.project-banner { height: 4px; flex-shrink: 0; }
+
 .project-body { padding: 18px 18px 14px; flex: 1; }
-.project-name { font-size: 15px; font-weight: 800; margin-bottom: 6px; }
-.project-meta { font-size: 12px; color: var(--text2); margin-bottom: 14px; }
+.project-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 5px; }
+.project-name { font-size: 15px; font-weight: 800; letter-spacing: -.2px; }
+.project-meta { font-size: 11px; color: var(--text3); font-weight: 600; margin-bottom: 14px; }
 
-.project-cols { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 14px; }
-.col-chip { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; background: #f3f4f6; color: var(--text2); }
+.project-cols { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 16px; }
+.col-chip {
+  font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px;
+  letter-spacing: .2px;
+}
 
-.project-progress { }
-.prog-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+.prog-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
 .prog-row span { font-size: 11px; color: var(--text2); font-weight: 600; }
-.prog-row strong { font-size: 12px; color: var(--text); font-weight: 800; }
-.prog-bar { height: 5px; background: #e5e7eb; border-radius: 3px; overflow: hidden; }
-.prog-fill { height: 100%; border-radius: 3px; transition: width .6s ease; }
+.prog-row strong { font-size: 12px; color: var(--text); font-weight: 900; }
+.prog-bar { height: 4px; background: rgba(255,255,255,.08); border-radius: 2px; overflow: hidden; }
+.prog-fill { height: 100%; border-radius: 2px; transition: width .6s ease; }
 
 .project-footer {
   padding: 12px 18px;
-  border-top: 1px solid #f3f4f6;
+  border-top: 1px solid var(--border);
   display: flex; align-items: center; justify-content: space-between;
+  background: rgba(0,0,0,.15);
 }
 .project-badges { display: flex; gap: 6px; }
-.badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 8px; }
-.badge-cards { background: #ede9fe; color: #6d28d9; }
-.badge-live  { background: #d1fae5; color: #065f46; }
+.badge {
+  font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px;
+  border: 1px solid;
+}
+.badge-cards { background: rgba(99,102,241,.12); color: var(--purple); border-color: rgba(99,102,241,.25); }
+.badge-live  { background: rgba(16,185,129,.12); color: var(--teal);   border-color: rgba(16,185,129,.25); }
+
 .project-open {
   font-size: 12px; font-weight: 700; color: var(--orange);
-  background: var(--orange-light); border: none; border-radius: 7px;
-  padding: 5px 12px; cursor: pointer; transition: all .1s;
+  background: rgba(240,106,53,.1); border: 1px solid rgba(240,106,53,.2);
+  border-radius: 8px; padding: 5px 12px; cursor: pointer; transition: all .12s;
 }
-.project-open:hover { background: #fde8de; }
+.project-open:hover { background: rgba(240,106,53,.2); border-color: rgba(240,106,53,.4); }
 
-/* DELETE BTN */
 .project-delete {
   background: none; border: none; cursor: pointer;
-  font-size: 14px; color: #d1d5db; padding: 3px;
-  border-radius: 5px; transition: all .1s;
+  font-size: 13px; color: var(--text3); padding: 3px 5px;
+  border-radius: 6px; transition: all .1s; line-height: 1;
 }
-.project-delete:hover { color: var(--red); background: #fee2e2; }
-
-/* ── TEMPLATES ── */
-.templates-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
-
-.template-card {
-  background: var(--card); border-radius: var(--radius);
-  border: 2px dashed var(--border); padding: 20px 18px;
-  cursor: pointer; transition: all .15s;
-  display: flex; flex-direction: column; gap: 10px;
-}
-.template-card:hover { border-color: var(--orange); background: var(--orange-light); transform: translateY(-2px); }
-.template-icon { font-size: 28px; }
-.template-name { font-size: 14px; font-weight: 800; }
-.template-desc { font-size: 12px; color: var(--text2); line-height: 1.4; }
-.template-cols { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 2px; }
-.template-col-dot { width: 8px; height: 8px; border-radius: 50%; }
-
-/* ── NEW PROJECT MODAL ── */
-.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 500; align-items: center; justify-content: center; }
-.overlay.open { display: flex; }
-.modal { background: #fff; border-radius: 16px; width: 460px; box-shadow: 0 25px 60px rgba(0,0,0,.2); overflow: hidden; }
-.modal-head { padding: 20px 22px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-.modal-head h2 { font-size: 16px; font-weight: 800; }
-.modal-close { background: none; border: none; font-size: 22px; cursor: pointer; color: #9ca3af; line-height: 1; }
-.modal-close:hover { color: var(--text); }
-.modal-body { padding: 20px 22px; display: flex; flex-direction: column; gap: 14px; }
-.field label { font-size: 11px; font-weight: 800; color: var(--text2); text-transform: uppercase; letter-spacing: .4px; display: block; margin-bottom: 5px; }
-.field input, .field select {
-  width: 100%; border: 1.5px solid var(--border); border-radius: 9px;
-  padding: 9px 12px; font-size: 13px; font-family: inherit; outline: none;
-  transition: border-color .15s;
-}
-.field input:focus, .field select:focus { border-color: var(--orange); }
-.template-preview { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
-.preview-col { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 8px; background: #f3f4f6; color: var(--text2); }
-.modal-foot { padding: 16px 22px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+.project-delete:hover { color: var(--red); background: rgba(239,68,68,.12); }
 
 /* ── EMPTY STATE ── */
-.empty-state { text-align: center; padding: 40px 20px; color: var(--text2); }
-.empty-state p { font-size: 14px; margin-top: 8px; }
+.empty-state {
+  grid-column: 1 / -1; text-align: center;
+  padding: 56px 20px; color: var(--text2);
+}
+.empty-state-icon { font-size: 48px; margin-bottom: 14px; opacity: .6; }
+.empty-state p { font-size: 14px; line-height: 1.6; }
+.empty-state p + p { margin-top: 6px; font-size: 13px; color: var(--text3); }
+
+/* ── TEMPLATES ── */
+.templates-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+
+.template-card {
+  background: var(--card);
+  border: 1px dashed rgba(255,255,255,.12);
+  border-radius: var(--radius);
+  padding: 20px 18px; cursor: pointer;
+  transition: all .15s; display: flex; flex-direction: column; gap: 10px;
+  position: relative; overflow: hidden;
+}
+.template-card:hover {
+  border-color: rgba(240,106,53,.4);
+  background: rgba(240,106,53,.06);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(240,106,53,.1);
+}
+.template-icon { font-size: 26px; line-height: 1; }
+.template-name { font-size: 13px; font-weight: 800; letter-spacing: -.1px; }
+.template-desc { font-size: 11px; color: var(--text2); line-height: 1.5; }
+.template-dots { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 2px; }
+.template-dot { width: 7px; height: 7px; border-radius: 50%; }
+
+/* ── MODAL ── */
+.overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.7); backdrop-filter: blur(8px);
+  z-index: 500; align-items: center; justify-content: center;
+}
+.overlay.open { display: flex; }
+.modal {
+  background: var(--card2); border: 1px solid var(--border2);
+  border-radius: 18px; width: 460px;
+  box-shadow: 0 32px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.04);
+  overflow: hidden;
+}
+.modal-head {
+  padding: 22px 24px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(255,255,255,.02);
+}
+.modal-head h2 { font-size: 16px; font-weight: 800; letter-spacing: -.2px; }
+.modal-close {
+  background: rgba(255,255,255,.06); border: 1px solid var(--border);
+  border-radius: 8px; font-size: 16px; cursor: pointer; color: var(--text2);
+  width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+  transition: all .1s;
+}
+.modal-close:hover { background: rgba(255,255,255,.12); color: var(--text); }
+.modal-body { padding: 22px 24px; display: flex; flex-direction: column; gap: 16px; }
+.field label {
+  font-size: 10px; font-weight: 800; color: var(--text3);
+  text-transform: uppercase; letter-spacing: .6px; display: block; margin-bottom: 6px;
+}
+.field input, .field select {
+  width: 100%;
+  background: rgba(255,255,255,.04); border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 10px 14px;
+  font-size: 13px; font-family: inherit; outline: none;
+  color: var(--text); transition: border-color .15s;
+}
+.field input::placeholder { color: var(--text3); }
+.field input:focus, .field select:focus { border-color: var(--orange); background: rgba(240,106,53,.05); }
+.field select option { background: #1a1a2e; color: var(--text); }
+.template-preview { display: flex; gap: 5px; flex-wrap: wrap; }
+.preview-col {
+  font-size: 10px; font-weight: 700; padding: 3px 9px;
+  border-radius: 20px; border: 1px solid;
+}
+.modal-foot {
+  padding: 18px 24px; border-top: 1px solid var(--border);
+  display: flex; justify-content: flex-end; gap: 8px;
+  background: rgba(0,0,0,.15);
+}
 
 /* ── TOAST ── */
-.toast-wrap { position: fixed; bottom: 20px; right: 20px; z-index: 700; display: flex; flex-direction: column; gap: 8px; }
-.toast { background: #1f2937; color: #fff; font-size: 13px; font-weight: 600; padding: 10px 16px; border-radius: 9px; box-shadow: 0 4px 16px rgba(0,0,0,.25); animation: slideUp .2s ease; pointer-events: none; }
-@keyframes slideUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+.toast-wrap { position: fixed; bottom: 22px; right: 22px; z-index: 700; display: flex; flex-direction: column; gap: 8px; }
+.toast {
+  background: var(--card2); border: 1px solid var(--border2);
+  color: var(--text); font-size: 13px; font-weight: 700;
+  padding: 11px 18px; border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+  animation: toastIn .2s ease; pointer-events: none;
+}
+@keyframes toastIn { from { opacity:0; transform:translateY(8px) scale(.96); } to { opacity:1; transform:none; } }
+
+/* ── FOOTER ── */
+.footer {
+  max-width: 1180px; margin: 0 auto; padding: 32px 32px 48px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-top: 1px solid var(--border); gap: 16px; flex-wrap: wrap;
+}
+.footer-left { font-size: 12px; color: var(--text3); }
+.footer-left a { color: var(--orange); text-decoration: none; }
+.footer-left a:hover { text-decoration: underline; }
+.footer-right { display: flex; align-items: center; gap: 8px; }
+.footer-badge {
+  font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px;
+  background: rgba(16,185,129,.12); color: var(--teal);
+  border: 1px solid rgba(16,185,129,.2);
+}
+
+@media (max-width: 720px) {
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .hero h1 { font-size: 28px; }
+  .section, .stats-row, .hero, .footer { padding-left: 16px; padding-right: 16px; }
+}
 </style>
 </head>
 <body>
 
 <!-- HEADER -->
-<div class="header">
-  <div class="logo">
-    <svg class="logo-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<header class="header">
+  <a class="logo" href="index.html">
+    <svg class="logo-icon" viewBox="0 0 32 32" fill="none">
       <defs>
-        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stop-color="#6366f1"/>
           <stop offset="100%" stop-color="#F06A35"/>
         </linearGradient>
       </defs>
-      <rect width="32" height="32" rx="8" fill="url(#g)"/>
-      <rect x="4" y="8" width="5" height="16" rx="2" fill="white" opacity="0.3"/>
-      <rect x="4" y="8" width="5" height="9" rx="2" fill="white" opacity="0.95"/>
-      <rect x="13.5" y="8" width="5" height="16" rx="2" fill="white" opacity="0.3"/>
-      <rect x="13.5" y="8" width="5" height="13" rx="2" fill="white" opacity="0.95"/>
-      <rect x="23" y="8" width="5" height="16" rx="2" fill="white" opacity="0.3"/>
-      <rect x="23" y="8" width="5" height="6" rx="2" fill="white" opacity="0.95"/>
+      <rect width="32" height="32" rx="8" fill="url(#lg)"/>
+      <rect x="5" y="9" width="4.5" height="14" rx="2" fill="white" opacity="0.25"/>
+      <rect x="5" y="9" width="4.5" height="9" rx="2" fill="white" opacity="0.95"/>
+      <rect x="13.75" y="9" width="4.5" height="14" rx="2" fill="white" opacity="0.25"/>
+      <rect x="13.75" y="9" width="4.5" height="12" rx="2" fill="white" opacity="0.95"/>
+      <rect x="22.5" y="9" width="4.5" height="14" rx="2" fill="white" opacity="0.25"/>
+      <rect x="22.5" y="9" width="4.5" height="5" rx="2" fill="white" opacity="0.95"/>
     </svg>
     <span class="logo-text">FlowBoard</span>
-  </div>
-  <span style="color:#d1d5db;font-size:18px;margin-left:4px">›</span>
-  <span style="font-size:14px;font-weight:700;color:var(--text2)">My Projects</span>
+  </a>
+  <span class="sep">›</span>
+  <span class="breadcrumb">My Projects</span>
   <div class="header-right">
-    <button class="btn btn-ghost" onclick="importProject()">⬆ Import</button>
+    <button class="btn btn-ghost" onclick="importProject()">↑ Import</button>
     <button class="btn btn-primary" onclick="openNewProject()">＋ New Project</button>
   </div>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-label">FlowBoard Dashboard</div>
+  <h1>Track your projects<br><em>like a pro.</em></h1>
+  <p>Free drag-and-drop Kanban boards for every project. No login. No server. Auto-saves in your browser.</p>
 </div>
 
-<!-- MAIN -->
-<div class="main">
-
-  <!-- STATS -->
-  <div class="stats-row" id="statsRow">
-    <div class="stat-card">
-      <div class="stat-value" id="stat-projects" style="color:var(--purple)">0</div>
-      <div class="stat-label">Total Projects</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value" id="stat-cards" style="color:var(--orange)">0</div>
-      <div class="stat-label">Total Cards</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value" id="stat-live" style="color:var(--green)">0</div>
-      <div class="stat-label">Cards Live</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value" id="stat-pct" style="color:var(--yellow)">0%</div>
-      <div class="stat-label">Overall Progress</div>
-    </div>
+<!-- STATS -->
+<div class="stats-row" id="statsRow">
+  <div class="stat-card">
+    <div class="stat-glow" style="background:var(--purple)"></div>
+    <div class="stat-value" id="stat-projects" style="color:var(--purple)">0</div>
+    <div class="stat-label">Total Projects</div>
   </div>
-
-  <!-- MY PROJECTS -->
-  <div class="section-title">My Projects</div>
-  <div class="projects-grid" id="projectsGrid">
-    <!-- populated by JS -->
+  <div class="stat-card">
+    <div class="stat-glow" style="background:var(--orange)"></div>
+    <div class="stat-value" id="stat-cards" style="color:var(--orange)">0</div>
+    <div class="stat-label">Total Cards</div>
   </div>
-
-  <!-- TEMPLATES -->
-  <div class="section-title" style="margin-top:8px">Start from a Template</div>
-  <div class="templates-grid" id="templatesGrid">
-    <!-- populated by JS -->
+  <div class="stat-card">
+    <div class="stat-glow" style="background:var(--teal)"></div>
+    <div class="stat-value" id="stat-live" style="color:var(--teal)">0</div>
+    <div class="stat-label">Cards Done</div>
   </div>
-
+  <div class="stat-card">
+    <div class="stat-glow" style="background:var(--yellow)"></div>
+    <div class="stat-value" id="stat-pct" style="color:var(--yellow)">0%</div>
+    <div class="stat-label">Overall Progress</div>
+  </div>
 </div>
+
+<!-- MY PROJECTS -->
+<div class="section">
+  <div class="section-head">
+    <span class="section-title">My Projects</span>
+    <div class="section-line"></div>
+    <span class="section-count" id="projCount">0</span>
+  </div>
+  <div class="projects-grid" id="projectsGrid"></div>
+</div>
+
+<!-- TEMPLATES -->
+<div class="section">
+  <div class="section-head">
+    <span class="section-title">Start from a Template</span>
+    <div class="section-line"></div>
+  </div>
+  <div class="templates-grid" id="templatesGrid"></div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-left">
+    <strong style="color:rgba(255,255,255,.6)">FlowBoard</strong> by
+    <a href="https://flowboard.vel-ai-au.com" target="_blank">vel-ai-au.com</a>
+    &nbsp;·&nbsp;
+    <a href="https://github.com/bamah075/Flowboard" target="_blank">GitHub</a>
+    &nbsp;·&nbsp; Free forever · Open source
+  </div>
+  <div class="footer-right">
+    <span class="footer-badge">✓ Free</span>
+    <span class="footer-badge" style="background:rgba(99,102,241,.12);color:var(--purple);border-color:rgba(99,102,241,.2)">No login</span>
+  </div>
+</footer>
 
 <!-- NEW PROJECT MODAL -->
 <div class="overlay" id="overlay">
   <div class="modal">
     <div class="modal-head">
-      <h2 id="modalHeading">New Project</h2>
-      <button class="modal-close" onclick="closeModal()">×</button>
+      <h2>✦ New Project</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
     <div class="modal-body">
       <div class="field">
@@ -248,7 +444,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
         <select id="f-template" onchange="previewTemplate()"></select>
       </div>
       <div class="field">
-        <label>Columns Preview</label>
+        <label>Columns</label>
         <div class="template-preview" id="templatePreview"></div>
       </div>
     </div>
@@ -272,23 +468,23 @@ const TEMPLATES = [
     name: '🌐 Website Build',
     desc: 'Track every page from idea to live',
     columns: [
-      {id:'backlog', name:'Backlog',         color:'#9ca3af'},
-      {id:'plan',    name:'Planning',        color:'#6366f1'},
-      {id:'design',  name:'Design',          color:'#8b5cf6'},
-      {id:'dev',     name:'In Development',  color:'#F06A35'},
-      {id:'review',  name:'Review / QA',     color:'#f59e0b'},
-      {id:'live',    name:'✅ Live',           color:'#10b981'},
+      {id:'backlog', name:'Backlog',        color:'#9ca3af'},
+      {id:'plan',    name:'Planning',       color:'#6366f1'},
+      {id:'design',  name:'Design',         color:'#8b5cf6'},
+      {id:'dev',     name:'In Development', color:'#F06A35'},
+      {id:'review',  name:'Review / QA',    color:'#f59e0b'},
+      {id:'live',    name:'✅ Live',          color:'#10b981'},
     ],
     cards: [
-      {col:'backlog', title:'Blog Listing Page',       type:'page',    priority:'med', assignee:'', due:'', progress:0,  notes:''},
-      {col:'backlog', title:'Careers Page',            type:'page',    priority:'low', assignee:'', due:'', progress:0,  notes:''},
-      {col:'backlog', title:'FAQ / Help Centre',       type:'content', priority:'low', assignee:'', due:'', progress:0,  notes:''},
-      {col:'plan',    title:'Homepage Wireframe',      type:'design',  priority:'high',assignee:'', due:'', progress:20, notes:''},
-      {col:'design',  title:'Homepage Visual Design',  type:'design',  priority:'high',assignee:'', due:'', progress:40, notes:''},
-      {col:'dev',     title:'Navigation & Header',     type:'dev',     priority:'high',assignee:'', due:'', progress:85, notes:''},
-      {col:'dev',     title:'Footer Component',        type:'dev',     priority:'med', assignee:'', due:'', progress:75, notes:''},
-      {col:'review',  title:'Landing Page (Hero)',     type:'page',    priority:'high',assignee:'', due:'', progress:95, notes:''},
-      {col:'live',    title:'Coming Soon Page',        type:'page',    priority:'low', assignee:'', due:'', progress:100,notes:'Launched ✓'},
+      {col:'backlog', title:'Blog Listing Page',      type:'page',    priority:'med',  progress:0,   notes:''},
+      {col:'backlog', title:'Careers Page',           type:'page',    priority:'low',  progress:0,   notes:''},
+      {col:'backlog', title:'FAQ / Help Centre',      type:'content', priority:'low',  progress:0,   notes:''},
+      {col:'plan',    title:'Homepage Wireframe',     type:'design',  priority:'high', progress:20,  notes:''},
+      {col:'design',  title:'Homepage Visual Design', type:'design',  priority:'high', progress:40,  notes:''},
+      {col:'dev',     title:'Navigation & Header',    type:'dev',     priority:'high', progress:85,  notes:''},
+      {col:'dev',     title:'Footer Component',       type:'dev',     priority:'med',  progress:75,  notes:''},
+      {col:'review',  title:'Landing Page (Hero)',    type:'page',    priority:'high', progress:95,  notes:''},
+      {col:'live',    title:'Coming Soon Page',       type:'page',    priority:'low',  progress:100, notes:'Launched ✓'},
     ]
   },
   {
@@ -296,21 +492,21 @@ const TEMPLATES = [
     name: '📣 Marketing Campaign',
     desc: 'Plan, create, launch & measure',
     columns: [
-      {id:'ideas',     name:'Ideas',          color:'#9ca3af'},
-      {id:'brief',     name:'Brief',          color:'#6366f1'},
-      {id:'creation',  name:'Creation',       color:'#8b5cf6'},
-      {id:'approval',  name:'Approval',       color:'#f59e0b'},
-      {id:'scheduled', name:'Scheduled',      color:'#F06A35'},
-      {id:'live',      name:'✅ Live',          color:'#10b981'},
+      {id:'ideas',     name:'Ideas',     color:'#9ca3af'},
+      {id:'brief',     name:'Brief',     color:'#6366f1'},
+      {id:'creation',  name:'Creation',  color:'#8b5cf6'},
+      {id:'approval',  name:'Approval',  color:'#f59e0b'},
+      {id:'scheduled', name:'Scheduled', color:'#F06A35'},
+      {id:'live',      name:'✅ Live',    color:'#10b981'},
     ],
     cards: [
-      {col:'ideas',    title:'Q3 Email Newsletter',    type:'content', priority:'med', assignee:'', due:'', progress:0,  notes:''},
-      {col:'ideas',    title:'LinkedIn Thought Leadership', type:'content', priority:'low', assignee:'', due:'', progress:0, notes:''},
-      {col:'brief',    title:'Summer Promo Campaign',  type:'design',  priority:'high',assignee:'', due:'', progress:30, notes:''},
-      {col:'creation', title:'Hero Banner Design',     type:'design',  priority:'high',assignee:'', due:'', progress:60, notes:''},
-      {col:'creation', title:'Email Copywriting',      type:'content', priority:'med', assignee:'', due:'', progress:40, notes:''},
-      {col:'approval', title:'Social Media Assets',    type:'design',  priority:'med', assignee:'', due:'', progress:90, notes:''},
-      {col:'live',     title:'Brand Awareness Ads',    type:'seo',     priority:'low', assignee:'', due:'', progress:100,notes:'Live ✓'},
+      {col:'ideas',    title:'Q3 Email Newsletter',       type:'content', priority:'med',  progress:0,   notes:''},
+      {col:'ideas',    title:'LinkedIn Thought Leadership',type:'content', priority:'low',  progress:0,   notes:''},
+      {col:'brief',    title:'Summer Promo Campaign',     type:'design',  priority:'high', progress:30,  notes:''},
+      {col:'creation', title:'Hero Banner Design',        type:'design',  priority:'high', progress:60,  notes:''},
+      {col:'creation', title:'Email Copywriting',         type:'content', priority:'med',  progress:40,  notes:''},
+      {col:'approval', title:'Social Media Assets',       type:'design',  priority:'med',  progress:90,  notes:''},
+      {col:'live',     title:'Brand Awareness Ads',       type:'seo',     priority:'low',  progress:100, notes:'Live ✓'},
     ]
   },
   {
@@ -318,21 +514,21 @@ const TEMPLATES = [
     name: '🚀 Product Launch',
     desc: 'Ship features from backlog to release',
     columns: [
-      {id:'backlog',  name:'Backlog',         color:'#9ca3af'},
-      {id:'todo',     name:'To Do',           color:'#6366f1'},
-      {id:'doing',    name:'In Progress',     color:'#F06A35'},
-      {id:'review',   name:'Code Review',     color:'#f59e0b'},
-      {id:'testing',  name:'Testing',         color:'#8b5cf6'},
-      {id:'released', name:'✅ Released',       color:'#10b981'},
+      {id:'backlog',  name:'Backlog',     color:'#9ca3af'},
+      {id:'todo',     name:'To Do',       color:'#6366f1'},
+      {id:'doing',    name:'In Progress', color:'#F06A35'},
+      {id:'review',   name:'Code Review', color:'#f59e0b'},
+      {id:'testing',  name:'Testing',     color:'#8b5cf6'},
+      {id:'released', name:'✅ Released',  color:'#10b981'},
     ],
     cards: [
-      {col:'backlog',  title:'User Auth Flow',          type:'dev', priority:'high',assignee:'', due:'', progress:0,   notes:''},
-      {col:'backlog',  title:'Payment Integration',     type:'dev', priority:'high',assignee:'', due:'', progress:0,   notes:''},
-      {col:'todo',     title:'Dashboard UI',            type:'design', priority:'med', assignee:'', due:'', progress:10, notes:''},
-      {col:'doing',    title:'REST API — Endpoints',    type:'dev', priority:'high',assignee:'', due:'', progress:55, notes:''},
-      {col:'doing',    title:'Mobile Responsive',       type:'dev', priority:'med', assignee:'', due:'', progress:40, notes:''},
-      {col:'review',   title:'Database Schema',         type:'dev', priority:'high',assignee:'', due:'', progress:90, notes:''},
-      {col:'released', title:'Landing Page',            type:'page', priority:'low',assignee:'', due:'', progress:100,notes:'Shipped ✓'},
+      {col:'backlog',  title:'User Auth Flow',        type:'dev',    priority:'high', progress:0,   notes:''},
+      {col:'backlog',  title:'Payment Integration',   type:'dev',    priority:'high', progress:0,   notes:''},
+      {col:'todo',     title:'Dashboard UI',          type:'design', priority:'med',  progress:10,  notes:''},
+      {col:'doing',    title:'REST API — Endpoints',  type:'dev',    priority:'high', progress:55,  notes:''},
+      {col:'doing',    title:'Mobile Responsive',     type:'dev',    priority:'med',  progress:40,  notes:''},
+      {col:'review',   title:'Database Schema',       type:'dev',    priority:'high', progress:90,  notes:''},
+      {col:'released', title:'Landing Page',          type:'page',   priority:'low',  progress:100, notes:'Shipped ✓'},
     ]
   },
   {
@@ -340,20 +536,20 @@ const TEMPLATES = [
     name: '💼 Client Project',
     desc: 'Manage deliverables for a client',
     columns: [
-      {id:'requested', name:'Requested',      color:'#9ca3af'},
-      {id:'scoping',   name:'Scoping',        color:'#6366f1'},
-      {id:'inprog',    name:'In Progress',    color:'#F06A35'},
-      {id:'review',    name:'Client Review',  color:'#f59e0b'},
-      {id:'revision',  name:'Revision',       color:'#8b5cf6'},
-      {id:'done',      name:'✅ Delivered',     color:'#10b981'},
+      {id:'requested', name:'Requested',     color:'#9ca3af'},
+      {id:'scoping',   name:'Scoping',       color:'#6366f1'},
+      {id:'inprog',    name:'In Progress',   color:'#F06A35'},
+      {id:'review',    name:'Client Review', color:'#f59e0b'},
+      {id:'revision',  name:'Revision',      color:'#8b5cf6'},
+      {id:'done',      name:'✅ Delivered',   color:'#10b981'},
     ],
     cards: [
-      {col:'requested', title:'Brand Identity Brief',   type:'design',  priority:'high',assignee:'', due:'', progress:0,   notes:''},
-      {col:'scoping',   title:'Website Scope Doc',      type:'page',    priority:'high',assignee:'', due:'', progress:25,  notes:''},
-      {col:'inprog',    title:'Logo Design v1',         type:'design',  priority:'high',assignee:'', due:'', progress:70,  notes:''},
-      {col:'inprog',    title:'Copywriting — About',    type:'content', priority:'med', assignee:'', due:'', progress:50,  notes:''},
-      {col:'review',    title:'Homepage Mockup',        type:'design',  priority:'high',assignee:'', due:'', progress:95,  notes:'Sent to client'},
-      {col:'done',      title:'Discovery Workshop',     type:'page',    priority:'low', assignee:'', due:'', progress:100, notes:'Complete ✓'},
+      {col:'requested', title:'Brand Identity Brief',  type:'design',  priority:'high', progress:0,   notes:''},
+      {col:'scoping',   title:'Website Scope Doc',     type:'page',    priority:'high', progress:25,  notes:''},
+      {col:'inprog',    title:'Logo Design v1',        type:'design',  priority:'high', progress:70,  notes:''},
+      {col:'inprog',    title:'Copywriting — About',   type:'content', priority:'med',  progress:50,  notes:''},
+      {col:'review',    title:'Homepage Mockup',       type:'design',  priority:'high', progress:95,  notes:'Sent to client'},
+      {col:'done',      title:'Discovery Workshop',    type:'page',    priority:'low',  progress:100, notes:'Complete ✓'},
     ]
   },
   {
@@ -361,61 +557,49 @@ const TEMPLATES = [
     name: '✍️ Content Calendar',
     desc: 'Plan blogs, social & video content',
     columns: [
-      {id:'ideas',    name:'Ideas',           color:'#9ca3af'},
-      {id:'research', name:'Research',        color:'#6366f1'},
-      {id:'writing',  name:'Writing',         color:'#8b5cf6'},
-      {id:'editing',  name:'Editing',         color:'#f59e0b'},
-      {id:'ready',    name:'Ready to Post',   color:'#F06A35'},
-      {id:'live',     name:'✅ Published',      color:'#10b981'},
+      {id:'ideas',    name:'Ideas',         color:'#9ca3af'},
+      {id:'research', name:'Research',      color:'#6366f1'},
+      {id:'writing',  name:'Writing',       color:'#8b5cf6'},
+      {id:'editing',  name:'Editing',       color:'#f59e0b'},
+      {id:'ready',    name:'Ready to Post', color:'#F06A35'},
+      {id:'live',     name:'✅ Published',   color:'#10b981'},
     ],
     cards: [
-      {col:'ideas',    title:'10 AI Tools for SMBs',    type:'content', priority:'med', assignee:'', due:'', progress:0,   notes:''},
-      {col:'ideas',    title:'Case Study: Client X',    type:'content', priority:'low', assignee:'', due:'', progress:0,   notes:''},
-      {col:'research', title:'SEO Keyword Guide 2026',  type:'seo',     priority:'high',assignee:'', due:'', progress:30,  notes:''},
-      {col:'writing',  title:'How to Build a Kanban',   type:'content', priority:'med', assignee:'', due:'', progress:55,  notes:''},
-      {col:'editing',  title:'LinkedIn Post Series',    type:'content', priority:'high',assignee:'', due:'', progress:85,  notes:''},
-      {col:'live',     title:'Getting Started Guide',   type:'content', priority:'low', assignee:'', due:'', progress:100, notes:'Published ✓'},
+      {col:'ideas',    title:'10 AI Tools for SMBs',   type:'content', priority:'med',  progress:0,   notes:''},
+      {col:'ideas',    title:'Case Study: Client X',   type:'content', priority:'low',  progress:0,   notes:''},
+      {col:'research', title:'SEO Keyword Guide 2026', type:'seo',     priority:'high', progress:30,  notes:''},
+      {col:'writing',  title:'How to Build a Kanban',  type:'content', priority:'med',  progress:55,  notes:''},
+      {col:'editing',  title:'LinkedIn Post Series',   type:'content', priority:'high', progress:85,  notes:''},
+      {col:'live',     title:'Getting Started Guide',  type:'content', priority:'low',  progress:100, notes:'Published ✓'},
     ]
   },
   {
     id: 'blank',
     name: '⬜ Blank Board',
-    desc: 'Start from scratch with empty columns',
+    desc: 'Start from scratch',
     columns: [
-      {id:'todo',    name:'To Do',          color:'#9ca3af'},
-      {id:'doing',   name:'In Progress',    color:'#F06A35'},
-      {id:'done',    name:'✅ Done',          color:'#10b981'},
+      {id:'todo',  name:'To Do',       color:'#9ca3af'},
+      {id:'doing', name:'In Progress', color:'#F06A35'},
+      {id:'done',  name:'✅ Done',      color:'#10b981'},
     ],
     cards: []
   },
 ];
 
 // ══════════════════════════════════════════════
-// STORAGE — projects stored as individual keys
+// STORAGE
 // ══════════════════════════════════════════════
 const INDEX_KEY = 'fb_projects_index';
-
-function getIndex() {
-  try { return JSON.parse(localStorage.getItem(INDEX_KEY) || '[]'); } catch { return []; }
-}
+function getIndex() { try { return JSON.parse(localStorage.getItem(INDEX_KEY) || '[]'); } catch { return []; } }
 function saveIndex(idx) { localStorage.setItem(INDEX_KEY, JSON.stringify(idx)); }
-
-function getProject(id) {
-  try { return JSON.parse(localStorage.getItem('fb_proj_' + id)); } catch { return null; }
-}
+function getProject(id) { try { return JSON.parse(localStorage.getItem('fb_proj_' + id)); } catch { return null; } }
 function saveProject(id, data) { localStorage.setItem('fb_proj_' + id, JSON.stringify(data)); }
 function deleteProject(id) {
   localStorage.removeItem('fb_proj_' + id);
-  const idx = getIndex().filter(p => p.id !== id);
-  saveIndex(idx);
+  saveIndex(getIndex().filter(p => p.id !== id));
 }
 
-// ══════════════════════════════════════════════
-// BOARD URL — link to the board page
-// ══════════════════════════════════════════════
-// If deployed alongside index.html, point to board.html
-// Otherwise fall back to the kanban page
-const BOARD_PAGE = 'board.html';
+const BOARD_PAGE = 'index.html';
 
 // ══════════════════════════════════════════════
 // RENDER
@@ -425,29 +609,26 @@ function render() {
   renderStats(index);
   renderProjects(index);
   renderTemplates();
+  document.getElementById('projCount').textContent = index.length;
 }
 
 function renderStats(index) {
   const allCards = index.flatMap(p => { const proj = getProject(p.id); return proj ? proj.cards : []; });
-  const live = allCards.filter(c => {
-    const proj = index.find(p => p.id === c._projId);
-    // find live col for this project
-    return false; // simplified — count progress=100
-  });
-  const live100 = allCards.filter(c => c.progress === 100).length;
-  const pct = allCards.length ? Math.round(live100 / allCards.length * 100) : 0;
+  const done = allCards.filter(c => c.progress === 100).length;
+  const pct = allCards.length ? Math.round(done / allCards.length * 100) : 0;
   document.getElementById('stat-projects').textContent = index.length;
   document.getElementById('stat-cards').textContent = allCards.length;
-  document.getElementById('stat-live').textContent = live100;
+  document.getElementById('stat-live').textContent = done;
   document.getElementById('stat-pct').textContent = pct + '%';
 }
 
 function renderProjects(index) {
   const grid = document.getElementById('projectsGrid');
   if (index.length === 0) {
-    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
-      <div style="font-size:40px">📋</div>
+    grid.innerHTML = `<div class="empty-state">
+      <div class="empty-state-icon">📋</div>
       <p>No projects yet — create one from a template below.</p>
+      <p>Each project opens as a full drag-and-drop Kanban board.</p>
     </div>`;
     return;
   }
@@ -455,35 +636,36 @@ function renderProjects(index) {
     const proj = getProject(p.id);
     if (!proj) return '';
     const total = proj.cards.length;
-    const live = proj.cards.filter(c => c.progress === 100).length;
-    const pct = total ? Math.round(live / total * 100) : 0;
-    const progColor = pct >= 80 ? '#10b981' : pct >= 40 ? '#F06A35' : '#6366f1';
-    const liveColName = proj.columns[proj.columns.length - 1]?.name || 'Done';
-    const updated = new Date(p.updated).toLocaleDateString('en-AU', {day:'numeric', month:'short', year:'numeric'});
+    const done  = proj.cards.filter(c => c.progress === 100).length;
+    const pct   = total ? Math.round(done / total * 100) : 0;
+    const progColor = pct >= 80 ? 'var(--teal)' : pct >= 40 ? 'var(--orange)' : 'var(--purple)';
+    const lastCol   = proj.columns[proj.columns.length - 1]?.name || 'Done';
+    const updated   = new Date(p.updated).toLocaleDateString('en-AU', {day:'numeric', month:'short'});
+    const c0 = proj.columns[0]?.color || '#9ca3af';
+    const cm = proj.columns[Math.floor(proj.columns.length / 2)]?.color || '#F06A35';
+    const cn = proj.columns[proj.columns.length - 1]?.color || '#10b981';
     return `
     <div class="project-card" onclick="openBoard('${p.id}')">
-      <div class="project-banner" style="background:linear-gradient(90deg,${proj.columns[0]?.color||'#9ca3af'},${proj.columns[Math.floor(proj.columns.length/2)]?.color||'#F06A35'},${proj.columns[proj.columns.length-1]?.color||'#10b981'})"></div>
+      <div class="project-banner" style="background:linear-gradient(90deg,${c0},${cm},${cn})"></div>
       <div class="project-body">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
-          <div class="project-name">${escHtml(proj.name)}</div>
-          <button class="project-delete" onclick="event.stopPropagation();confirmDelete('${p.id}')" title="Delete project">🗑</button>
+        <div class="project-top">
+          <div class="project-name">${esc(proj.name)}</div>
+          <button class="project-delete" onclick="event.stopPropagation();confirmDelete('${p.id}')" title="Delete">✕</button>
         </div>
-        <div class="project-meta">Updated ${updated} · ${proj.columns.length} columns</div>
+        <div class="project-meta">Updated ${updated} &nbsp;·&nbsp; ${proj.columns.length} columns</div>
         <div class="project-cols">
-          ${proj.columns.map(c => `<span class="col-chip" style="background:${c.color}22;color:${c.color}">${c.name}</span>`).join('')}
+          ${proj.columns.map(c => `<span class="col-chip" style="background:${c.color}1a;color:${c.color};border:1px solid ${c.color}33">${c.name}</span>`).join('')}
         </div>
-        <div class="project-progress">
-          <div class="prog-row">
-            <span>${live}/${total} ${liveColName}</span>
-            <strong>${pct}%</strong>
-          </div>
-          <div class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:${progColor}"></div></div>
+        <div class="prog-row">
+          <span>${done}/${total} ${esc(lastCol)}</span>
+          <strong>${pct}%</strong>
         </div>
+        <div class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:${progColor}"></div></div>
       </div>
       <div class="project-footer">
         <div class="project-badges">
           <span class="badge badge-cards">${total} cards</span>
-          <span class="badge badge-live">${live} done</span>
+          <span class="badge badge-live">${done} done</span>
         </div>
         <button class="project-open" onclick="event.stopPropagation();openBoard('${p.id}')">Open Board →</button>
       </div>
@@ -496,22 +678,21 @@ function renderTemplates() {
     <div class="template-card" onclick="openNewProject('${t.id}')">
       <div class="template-icon">${t.name.split(' ')[0]}</div>
       <div>
-        <div class="template-name">${t.name.slice(2)}</div>
+        <div class="template-name">${t.name.slice(t.name.indexOf(' ') + 1)}</div>
         <div class="template-desc">${t.desc}</div>
       </div>
-      <div class="template-cols">
-        ${t.columns.map(c => `<div class="template-col-dot" style="background:${c.color}" title="${c.name}"></div>`).join('')}
+      <div class="template-dots">
+        ${t.columns.map(c => `<div class="template-dot" style="background:${c.color}" title="${c.name}"></div>`).join('')}
       </div>
     </div>
   `).join('');
 }
 
 // ══════════════════════════════════════════════
-// OPEN BOARD
+// BOARD NAV
 // ══════════════════════════════════════════════
-function openBoard(projectId) {
-  // Encode project ID into URL and navigate to board page
-  window.location.href = BOARD_PAGE + '?project=' + encodeURIComponent(projectId);
+function openBoard(id) {
+  window.location.href = BOARD_PAGE + '?project=' + encodeURIComponent(id);
 }
 
 // ══════════════════════════════════════════════
@@ -533,36 +714,30 @@ function previewTemplate() {
   const tmpl = TEMPLATES.find(t => t.id === tid);
   if (!tmpl) return;
   document.getElementById('templatePreview').innerHTML =
-    tmpl.columns.map(c => `<div class="preview-col" style="background:${c.color}22;color:${c.color}">${c.name}</div>`).join('');
+    tmpl.columns.map(c => `<div class="preview-col" style="background:${c.color}18;color:${c.color};border-color:${c.color}33">${c.name}</div>`).join('');
 }
 
 function createProject() {
   const name = document.getElementById('f-name').value.trim();
   if (!name) { document.getElementById('f-name').focus(); return; }
-  const tid = document.getElementById('f-template').value;
+  const tid  = document.getElementById('f-template').value;
   const tmpl = TEMPLATES.find(t => t.id === tid) || TEMPLATES[0];
-
-  const id = 'proj_' + Date.now();
-  const now = new Date().toISOString();
-  let nextCardId = 1;
-
+  const id   = 'proj_' + Date.now();
+  const now  = new Date().toISOString();
+  let cardId = 1;
   const proj = {
     name,
     columns: JSON.parse(JSON.stringify(tmpl.columns)),
-    cards: tmpl.cards.map(c => ({ id: nextCardId++, ...c })),
+    cards:   tmpl.cards.map(c => ({ id: cardId++, ...c })),
   };
-
   saveProject(id, proj);
   const idx = getIndex();
   idx.unshift({ id, name, created: now, updated: now });
   saveIndex(idx);
-
   closeModal();
   render();
-  toast(`✅ "${name}" created`);
-
-  // Navigate straight to the board
-  setTimeout(() => openBoard(id), 600);
+  toast('✅ "' + name + '" created');
+  setTimeout(() => openBoard(id), 500);
 }
 
 // ══════════════════════════════════════════════
@@ -571,10 +746,8 @@ function createProject() {
 function confirmDelete(id) {
   const proj = getProject(id);
   if (!proj) return;
-  if (!confirm(`Delete "${proj.name}"? This cannot be undone.`)) return;
-  deleteProject(id);
-  render();
-  toast('Project deleted');
+  if (!confirm('Delete "' + proj.name + '"? This cannot be undone.')) return;
+  deleteProject(id); render(); toast('Project deleted');
 }
 
 // ══════════════════════════════════════════════
@@ -588,14 +761,12 @@ function handleImport(e) {
     try {
       const data = JSON.parse(ev.target.result);
       if (!data.columns || !data.cards) { alert('Invalid FlowBoard JSON file.'); return; }
-      const id = 'proj_' + Date.now();
+      const id  = 'proj_' + Date.now();
       const now = new Date().toISOString();
-      saveProject(id, { name: data.projectName || 'Imported Board', columns: data.columns, cards: data.cards });
-      const idx = getIndex();
-      idx.unshift({ id, name: data.projectName || 'Imported Board', created: now, updated: now });
-      saveIndex(idx);
-      render();
-      toast('Board imported ✓');
+      const name = data.projectName || 'Imported Board';
+      saveProject(id, { name, columns: data.columns, cards: data.cards });
+      const idx = getIndex(); idx.unshift({ id, name, created: now, updated: now }); saveIndex(idx);
+      render(); toast('Board imported ✓');
     } catch { alert('Could not parse file.'); }
   };
   reader.readAsText(file);
@@ -604,32 +775,28 @@ function handleImport(e) {
 // ══════════════════════════════════════════════
 // HELPERS
 // ══════════════════════════════════════════════
-function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function toast(msg) {
   const wrap = document.getElementById('toastWrap');
   const el = document.createElement('div'); el.className = 'toast'; el.textContent = msg;
-  wrap.appendChild(el); setTimeout(() => el.remove(), 2200);
+  wrap.appendChild(el); setTimeout(() => el.remove(), 2400);
 }
-
 document.getElementById('overlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
 // ══════════════════════════════════════════════
-// INIT
+// INIT — seed demo if empty
 // ══════════════════════════════════════════════
-// Seed a demo project if nothing exists yet
 if (getIndex().length === 0) {
-  const id = 'proj_demo';
   const tmpl = TEMPLATES[0];
+  const id   = 'proj_demo';
   saveProject(id, {
     name: 'Website Build (Demo)',
     columns: JSON.parse(JSON.stringify(tmpl.columns)),
-    cards: tmpl.cards.map((c, i) => ({ id: i+1, ...c })),
+    cards: tmpl.cards.map((c, i) => ({ id: i + 1, ...c })),
   });
   saveIndex([{ id, name: 'Website Build (Demo)', created: new Date().toISOString(), updated: new Date().toISOString() }]);
 }
-
 render();
 </script>
 </body>
