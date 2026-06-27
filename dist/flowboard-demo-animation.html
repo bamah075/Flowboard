@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FlowBoard — Demo Animation</title>
+<style>
+:root { color-scheme: light; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #0f0c1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* ── SCENE WRAPPER ── */
+.scene {
+  width: 780px;
+  height: 480px;
+  background: #f3f4f6;
+  border-radius: 18px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 40px 80px rgba(0,0,0,.6);
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  background: #fff;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 10px;
+  border-bottom: 1px solid #e0e0e0;
+  position: relative;
+  z-index: 10;
+}
+.logo-icon {
+  width: 28px; height: 28px;
+}
+.logo-text {
+  font-size: 15px; font-weight: 900;
+  background: linear-gradient(135deg, #6366f1, #F06A35, #f59e0b);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.tb-spacer { flex: 1; }
+.tb-btn {
+  background: #F06A35; color: #fff;
+  border: none; border-radius: 7px;
+  padding: 6px 14px; font-size: 12px; font-weight: 700;
+}
+.tb-ghost {
+  background: #f3f4f6; color: #555;
+  border: none; border-radius: 7px;
+  padding: 6px 12px; font-size: 12px; font-weight: 600;
+  margin-right: 6px;
+}
+
+/* ── SUBBAR ── */
+.subbar {
+  background: #fff;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 8px;
+  border-bottom: 1px solid #e8e8e8;
+}
+.chip {
+  font-size: 11px; font-weight: 700;
+  padding: 3px 10px; border-radius: 20px;
+  border: 1.5px solid #e0e0e0;
+  background: #fff; color: #888;
+}
+.chip.active {
+  border-color: #F06A35; color: #F06A35; background: #fff5f2;
+}
+.prog-pill {
+  margin-left: auto;
+  background: #fff5f2; color: #F06A35;
+  font-size: 11px; font-weight: 800;
+  padding: 3px 10px; border-radius: 20px;
+}
+
+/* ── BOARD ── */
+.board {
+  display: flex;
+  gap: 12px;
+  padding: 16px 20px;
+  height: calc(480px - 86px);
+  overflow: hidden;
+}
+
+/* ── COLUMN ── */
+.col {
+  width: 168px; flex-shrink: 0;
+  background: #e9eaed;
+  border-radius: 12px;
+  display: flex; flex-direction: column;
+  padding: 10px 8px 10px;
+  gap: 7px;
+  position: relative;
+}
+.col.highlight {
+  background: #dfe0e4;
+  outline: 2px dashed #F06A35;
+  outline-offset: -3px;
+}
+.col-head {
+  display: flex; align-items: center; gap: 7px;
+  padding: 0 2px 4px;
+}
+.col-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.col-name { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; flex: 1; }
+.col-count { font-size: 10px; font-weight: 700; background: rgba(0,0,0,.1); border-radius: 10px; padding: 1px 6px; color: #555; }
+
+/* ── CARD ── */
+.card {
+  background: #fff;
+  border-radius: 9px;
+  padding: 10px 11px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 0 0 1px rgba(0,0,0,.04);
+  border-left: 3px solid transparent;
+  position: relative;
+}
+.card.hi { border-left-color: #ef4444; }
+.card.med { border-left-color: #f59e0b; }
+.card.done-card { border-left-color: #10b981; opacity:.85; }
+
+.card-tag { display: inline-block; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 8px; margin-bottom: 5px; text-transform: uppercase; }
+.tag-page    { background: #dbeafe; color: #1d4ed8; }
+.tag-design  { background: #ede9fe; color: #6d28d9; }
+.tag-dev     { background: #d1fae5; color: #065f46; }
+.tag-seo     { background: #fef3c7; color: #92400e; }
+.tag-content { background: #fee2e2; color: #991b1b; }
+
+.card-title { font-size: 11.5px; font-weight: 600; color: #1d1d1f; line-height: 1.3; margin-bottom: 7px; }
+.card-meta { display: flex; align-items: center; justify-content: space-between; }
+.avatar { width: 18px; height: 18px; border-radius: 50%; font-size: 8px; font-weight: 800; color: #fff; display: flex; align-items: center; justify-content: center; }
+.due { font-size: 10px; color: #9ca3af; }
+.due.late { color: #ef4444; font-weight: 700; }
+
+.prog-wrap { margin-top: 7px; }
+.prog-bar { height: 3px; background: #e5e7eb; border-radius: 2px; overflow: hidden; }
+.prog-fill { height: 100%; border-radius: 2px; }
+.prog-label { font-size: 9px; color: #9ca3af; text-align: right; margin-top: 2px; }
+
+/* ── DRAGGING GHOST ── */
+.drag-ghost {
+  position: absolute;
+  width: 152px;
+  background: #fff;
+  border-radius: 9px;
+  padding: 10px 11px;
+  box-shadow: 0 12px 30px rgba(0,0,0,.25);
+  border-left: 3px solid #F06A35;
+  pointer-events: none;
+  z-index: 100;
+  opacity: 0;
+  transform: rotate(3deg) scale(1.05);
+  transition: opacity .2s;
+}
+.drag-ghost.visible { opacity: .9; }
+
+/* ── CURSOR ── */
+.cursor {
+  position: absolute;
+  width: 20px; height: 20px;
+  pointer-events: none;
+  z-index: 200;
+  opacity: 0;
+  transition: opacity .3s;
+}
+.cursor.show { opacity: 1; }
+.cursor svg { width: 100%; height: 100%; filter: drop-shadow(0 2px 4px rgba(0,0,0,.4)); }
+
+/* ── CLICK RIPPLE ── */
+.ripple {
+  position: absolute;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: rgba(240,106,53,.35);
+  pointer-events: none;
+  z-index: 150;
+  transform: scale(0);
+  opacity: 0;
+  transition: transform .4s ease, opacity .4s ease;
+}
+.ripple.pop { transform: scale(2); opacity: 0; }
+
+/* ── MODAL OVERLAY ── */
+.modal-overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,.35);
+  z-index: 300;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s;
+}
+.modal-overlay.show { opacity: 1; }
+.modal {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px;
+  width: 300px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.3);
+  transform: scale(.92) translateY(10px);
+  transition: transform .3s ease;
+}
+.modal-overlay.show .modal { transform: scale(1) translateY(0); }
+.modal h3 { font-size: 13px; font-weight: 700; margin-bottom: 14px; }
+.modal-field { margin-bottom: 10px; }
+.modal-field label { font-size: 10px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: .4px; display: block; margin-bottom: 4px; }
+.modal-input {
+  width: 100%; border: 1.5px solid #e5e7eb; border-radius: 7px;
+  padding: 7px 10px; font-size: 12px; color: #111; font-family: inherit;
+}
+.modal-input.focused { border-color: #F06A35; }
+.modal-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.modal-footer { display: flex; justify-content: flex-end; gap: 6px; margin-top: 12px; }
+.modal-cancel { background: #f3f4f6; border: none; border-radius: 7px; padding: 6px 12px; font-size: 11px; font-weight: 600; color: #555; }
+.modal-save { background: #F06A35; border: none; border-radius: 7px; padding: 6px 14px; font-size: 11px; font-weight: 700; color: #fff; }
+
+/* ── TOAST ── */
+.toast {
+  position: absolute;
+  bottom: 20px; right: 20px;
+  background: #1f2937; color: #fff;
+  font-size: 12px; font-weight: 600;
+  padding: 9px 16px; border-radius: 9px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.3);
+  z-index: 400;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity .25s, transform .25s;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+/* ── STEP LABEL ── */
+.step-label {
+  position: absolute;
+  top: 12px; left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15,12,26,.85);
+  color: #fff;
+  font-size: 12px; font-weight: 700;
+  padding: 5px 14px; border-radius: 20px;
+  z-index: 500;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity .3s;
+}
+.step-label.show { opacity: 1; }
+
+/* ── WATERMARK ── */
+.watermark {
+  position: absolute;
+  bottom: 12px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,.9);
+  border-radius: 20px;
+  padding: 5px 14px;
+  z-index: 500;
+  font-size: 11px; font-weight: 800;
+  letter-spacing: -.2px;
+  color: #333;
+}
+.watermark-url {
+  font-size: 10px; font-weight: 700; color: #F06A35;
+}
+
+/* new card highlight */
+@keyframes cardPop {
+  0%   { transform: scale(.85); opacity: 0; }
+  60%  { transform: scale(1.04); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.card.new-pop { animation: cardPop .45s ease forwards; }
+</style>
+</head>
+<body>
+
+<div class="scene" id="scene">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <svg class="logo-icon" viewBox="0 0 32 32" fill="none">
+      <defs>
+        <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#6366f1"/>
+          <stop offset="100%" stop-color="#F06A35"/>
+        </linearGradient>
+      </defs>
+      <rect width="32" height="32" rx="8" fill="url(#lg)"/>
+      <rect x="4" y="8" width="5" height="16" rx="2" fill="white" opacity="0.3"/>
+      <rect x="4" y="8" width="5" height="9" rx="2" fill="white" opacity="0.95"/>
+      <rect x="13.5" y="8" width="5" height="16" rx="2" fill="white" opacity="0.3"/>
+      <rect x="13.5" y="8" width="5" height="13" rx="2" fill="white" opacity="0.95"/>
+      <rect x="23" y="8" width="5" height="16" rx="2" fill="white" opacity="0.3"/>
+      <rect x="23" y="8" width="5" height="6" rx="2" fill="white" opacity="0.95"/>
+    </svg>
+    <span class="logo-text">FlowBoard</span>
+    <div class="tb-spacer"></div>
+    <button class="tb-ghost">⬇ Export</button>
+    <button class="tb-btn">+ Add Card</button>
+  </div>
+
+  <!-- SUBBAR -->
+  <div class="subbar">
+    <span style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px">Filter:</span>
+    <div class="chip active">All</div>
+    <div class="chip">Design</div>
+    <div class="chip">Dev</div>
+    <div class="chip">SEO</div>
+    <div class="prog-pill" id="progPill">3 / 17 Live (18%)</div>
+  </div>
+
+  <!-- BOARD -->
+  <div class="board" id="board">
+
+    <!-- BACKLOG -->
+    <div class="col" id="col-backlog">
+      <div class="col-head">
+        <div class="col-dot" style="background:#9ca3af"></div>
+        <span class="col-name" style="color:#9ca3af">Backlog</span>
+        <span class="col-count" id="cnt-backlog">3</span>
+      </div>
+      <div class="card med" id="card-blog">
+        <div class="card-tag tag-page">Page</div>
+        <div class="card-title">Blog Listing Page</div>
+        <div class="card-meta">
+          <div class="avatar" style="background:#6366f1">JD</div>
+          <span class="due">20 Jul</span>
+        </div>
+      </div>
+      <div class="card med">
+        <div class="card-tag tag-content">Content</div>
+        <div class="card-title">FAQ / Help Centre</div>
+        <div class="card-meta">
+          <div class="avatar" style="background:#10b981">SM</div>
+          <span class="due">5 Aug</span>
+        </div>
+      </div>
+      <div class="card low" id="card-careers">
+        <div class="card-tag tag-page">Page</div>
+        <div class="card-title">Careers Page</div>
+        <div class="card-meta">
+          <div class="avatar" style="background:#f59e0b">AL</div>
+          <span class="due">28 Jul</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- IN DEVELOPMENT -->
+    <div class="col" id="col-dev">
+      <div class="col-head">
+        <div class="col-dot" style="background:#F06A35"></div>
+        <span class="col-name" style="color:#F06A35">In Development</span>
+        <span class="col-count" id="cnt-dev">3</span>
+      </div>
+      <div class="card hi" id="card-nav">
+        <div class="card-tag tag-dev">Dev</div>
+        <div class="card-title">Navigation & Header</div>
+        <div class="card-meta">
+          <div class="avatar" style="background:#ef4444">TS</div>
+          <span class="due late">26 Jun</span>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-bar"><div class="prog-fill" id="nav-prog" style="width:85%;background:#F06A35"></div></div>
+          <div class="prog-label" id="nav-prog-label">85%</div>
+        </div>
+      </div>
+      <div class="card med">
+        <div class="card-tag tag-dev">Dev</div>
+        <div class="card-title">Footer Component</div>
+        <div class="card-meta">
+          <div class="avatar" style="background:#ef4444">TS</div>
+          <span class="due">27 Jun</span>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-bar"><div class="prog-fill" style="width:75%;background:#F06A35"></div></div>
+          <div class="prog-label">75%</div>
+        </div>
+      </div>
+      <div class="card hi" id="card-seo">
+        <div class="card-tag tag-seo">SEO</div>
+        <div class="card-title">SEO Meta Tags Setup</div>
+        <div class="card-meta">
+          <div class="avatar" style="background:#10b981">SM</div>
+          <span class="due late">28 Jun</span>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-bar"><div class="prog-fill" style="width:50%;background:#6366f1"></div></div>
+          <div class="prog-label">50%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REVIEW -->
+    <div class="col" id="col-review">
+      <div class="col-head">
+        <div class="col-dot" style="background:#f59e0b"></div>
+        <span class="col-name" style="color:#f59e0b">Review / QA</span>
+        <span class="col-count" id="cnt-review">2</span>
+      </div>
+      <div class="card hi">
+        <div class="card-tag tag-page">Page</div>
+        <div class="card-title">Landing Page (Hero)</div>
+        <div class="card-meta">
+          <div class="avatar" style="background:#F06A35">BM</div>
+          <span class="due">25 Jun</span>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-bar"><div class="prog-fill" style="width:95%;background:#10b981"></div></div>
+          <div class="prog-label">95%</div>
+        </div>
+      </div>
+      <div class="card med" id="card-services">
+        <div class="card-tag tag-page">Page</div>
+        <div class="card-title">Services Overview</div>
+        <div class="card-meta">
+          <div class="avatar" style="background:#6366f1">JD</div>
+          <span class="due">27 Jun</span>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-bar"><div class="prog-fill" style="width:90%;background:#10b981"></div></div>
+          <div class="prog-label">90%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIVE -->
+    <div class="col" id="col-live">
+      <div class="col-head">
+        <div class="col-dot" style="background:#10b981"></div>
+        <span class="col-name" style="color:#10b981">✅ Live</span>
+        <span class="col-count" id="cnt-live">3</span>
+      </div>
+      <div class="card done-card">
+        <div class="card-tag tag-page">Page</div>
+        <div class="card-title">Coming Soon Page</div>
+        <div class="card-meta">
+          <div class="avatar" style="background:#F06A35">BM</div>
+          <span class="due">10 Jun</span>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-bar"><div class="prog-fill" style="width:100%;background:#10b981"></div></div>
+          <div class="prog-label">100%</div>
+        </div>
+      </div>
+      <div class="card done-card">
+        <div class="card-tag tag-content">Content</div>
+        <div class="card-title">Privacy Policy</div>
+        <div class="card-meta">
+          <div class="avatar" style="background:#f59e0b">AL</div>
+          <span class="due">12 Jun</span>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-bar"><div class="prog-fill" style="width:100%;background:#10b981"></div></div>
+          <div class="prog-label">100%</div>
+        </div>
+      </div>
+      <!-- nav card will be dropped here -->
+    </div>
+
+  </div><!-- /board -->
+
+  <!-- DRAG GHOST -->
+  <div class="drag-ghost" id="dragGhost">
+    <div class="card-tag tag-dev">Dev</div>
+    <div class="card-title">Navigation & Header</div>
+    <div class="card-meta">
+      <div class="avatar" style="background:#ef4444">TS</div>
+      <span class="due">26 Jun</span>
+    </div>
+    <div class="prog-wrap">
+      <div class="prog-bar"><div class="prog-fill" style="width:100%;background:#10b981"></div></div>
+      <div class="prog-label">100%</div>
+    </div>
+  </div>
+
+  <!-- CURSOR -->
+  <div class="cursor" id="cursor">
+    <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M3 2l12 7-5 2-3 5L3 2z" fill="#fff" stroke="#333" stroke-width="1.2" stroke-linejoin="round"/>
+    </svg>
+  </div>
+
+  <!-- CLICK RIPPLE -->
+  <div class="ripple" id="ripple"></div>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <h3>✏️ Edit Card</h3>
+      <div class="modal-field">
+        <label>Page / Task Name</label>
+        <div class="modal-input" id="modalInput" style="color:#111">Navigation & Header</div>
+      </div>
+      <div class="modal-row">
+        <div class="modal-field">
+          <label>Type</label>
+          <div class="modal-input">💻 Dev</div>
+        </div>
+        <div class="modal-field">
+          <label>Priority</label>
+          <div class="modal-input">🔴 High</div>
+        </div>
+      </div>
+      <div class="modal-row">
+        <div class="modal-field">
+          <label>Assignee</label>
+          <div class="modal-input focused" id="assigneeField">TS</div>
+        </div>
+        <div class="modal-field">
+          <label>Due Date</label>
+          <div class="modal-input">2026-06-28</div>
+        </div>
+      </div>
+      <div class="modal-field">
+        <label>Progress: <span id="modalProg">100</span>%</label>
+        <div style="height:4px;background:#e5e7eb;border-radius:2px;margin-top:6px">
+          <div id="modalProgBar" style="width:100%;height:100%;background:#10b981;border-radius:2px;transition:width .4s"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-cancel">Cancel</button>
+        <button class="modal-save">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <!-- STEP LABEL -->
+  <div class="step-label" id="stepLabel"></div>
+
+  <!-- WATERMARK -->
+  <div class="watermark">
+    <svg width="18" height="18" viewBox="0 0 32 32" fill="none">
+      <defs><linearGradient id="wlg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#6366f1"/><stop offset="100%" stop-color="#F06A35"/></linearGradient></defs>
+      <rect width="32" height="32" rx="8" fill="url(#wlg)"/>
+      <rect x="4" y="8" width="5" height="16" rx="2" fill="white" opacity="0.3"/>
+      <rect x="4" y="8" width="5" height="9" rx="2" fill="white" opacity="0.95"/>
+      <rect x="13.5" y="8" width="5" height="16" rx="2" fill="white" opacity="0.3"/>
+      <rect x="13.5" y="8" width="5" height="13" rx="2" fill="white" opacity="0.95"/>
+      <rect x="23" y="8" width="5" height="16" rx="2" fill="white" opacity="0.3"/>
+      <rect x="23" y="8" width="5" height="6" rx="2" fill="white" opacity="0.95"/>
+    </svg>
+    <span style="font-weight:900">FlowBoard</span>
+    <span style="color:#d1d5db;margin:0 4px">·</span>
+    <span class="watermark-url">flowboard.vel-ai-consulting.workers.dev</span>
+  </div>
+
+</div><!-- /scene -->
+
+<script>
+// ── HELPERS ─────────────────────────────────────
+const el  = id => document.getElementById(id);
+const pos = id => { const r = el(id).getBoundingClientRect(); const s = el('scene').getBoundingClientRect(); return { x: r.left - s.left + r.width/2, y: r.top - s.top + r.height/2 }; };
+
+function moveCursor(x, y, dur=600) {
+  return new Promise(resolve => {
+    const cur = el('cursor');
+    cur.style.transition = `left ${dur}ms cubic-bezier(.4,0,.2,1), top ${dur}ms cubic-bezier(.4,0,.2,1)`;
+    cur.style.left = (x - 10) + 'px';
+    cur.style.top  = (y - 10) + 'px';
+    setTimeout(resolve, dur);
+  });
+}
+function showCursor(x, y) {
+  const cur = el('cursor');
+  cur.style.transition = 'none';
+  cur.style.left = (x-10)+'px';
+  cur.style.top  = (y-10)+'px';
+  cur.classList.add('show');
+}
+function hideCursor() { el('cursor').classList.remove('show'); }
+
+function click(x, y) {
+  return new Promise(resolve => {
+    const r = el('ripple');
+    r.style.left = (x - 12) + 'px';
+    r.style.top  = (y - 12) + 'px';
+    r.style.transition = 'none';
+    r.style.transform = 'scale(0)';
+    r.style.opacity = '.5';
+    setTimeout(() => {
+      r.style.transition = 'transform .4s ease, opacity .4s ease';
+      r.style.transform = 'scale(2.5)';
+      r.style.opacity = '0';
+    }, 30);
+    setTimeout(resolve, 400);
+  });
+}
+
+function label(text, dur=2000) {
+  el('stepLabel').textContent = text;
+  el('stepLabel').classList.add('show');
+  return new Promise(resolve => setTimeout(() => { el('stepLabel').classList.remove('show'); setTimeout(resolve, 300); }, dur));
+}
+
+function toast(text, dur=1600) {
+  el('toast').textContent = text;
+  el('toast').classList.add('show');
+  return new Promise(resolve => setTimeout(() => { el('toast').classList.remove('show'); setTimeout(resolve, 300); }, dur));
+}
+
+function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ── ANIMATION SEQUENCE ─────────────────────────
+async function run() {
+  await wait(800);
+
+  // ── STEP 1: Hover over Navigation card ──────
+  await label('🖱  Hover over a card to reveal actions', 1800);
+  const navPos = pos('card-nav');
+  showCursor(navPos.x - 80, navPos.y);
+  await moveCursor(navPos.x, navPos.y, 700);
+  el('card-nav').style.boxShadow = '0 3px 12px rgba(0,0,0,.15)';
+  await wait(700);
+
+  // ── STEP 2: Double-click to edit ────────────
+  await label('✏️  Double-click any card to edit it', 1800);
+  await click(navPos.x, navPos.y);
+  await wait(100);
+  await click(navPos.x, navPos.y);
+  await wait(200);
+  el('card-nav').style.boxShadow = '';
+  el('modalOverlay').classList.add('show');
+  await wait(1200);
+
+  // animate typing in assignee field
+  el('assigneeField').style.borderColor = '#F06A35';
+  await wait(600);
+  el('modalOverlay').classList.remove('show');
+
+  // ── STEP 3: Drag nav card to Review ─────────
+  await wait(400);
+  await label('🖱  Drag & drop to move between columns', 1800);
+
+  // grab card
+  el('card-nav').style.opacity = '0.3';
+  const ghost = el('dragGhost');
+  ghost.style.left = navPos.x - 76 + 'px';
+  ghost.style.top  = navPos.y - 50 + 'px';
+  ghost.classList.add('visible');
+  await click(navPos.x, navPos.y);
+  await wait(200);
+
+  // drag across to review col
+  const revPos = pos('col-review');
+  await moveCursor(navPos.x, navPos.y, 1);
+  showCursor(navPos.x, navPos.y);
+  el('col-review').classList.add('highlight');
+
+  // animate ghost moving
+  const steps = 30;
+  const dx = (revPos.x - navPos.x) / steps;
+  const dy = (revPos.y - navPos.y + 60) / steps;
+  for (let i = 0; i <= steps; i++) {
+    const px = navPos.x + dx*i;
+    const py = navPos.y + dy*i;
+    ghost.style.left = (px - 76) + 'px';
+    ghost.style.top  = (py - 50) + 'px';
+    el('cursor').style.transition = 'none';
+    el('cursor').style.left = (px - 10) + 'px';
+    el('cursor').style.top  = (py - 10) + 'px';
+    await wait(28);
+  }
+
+  // drop
+  await wait(200);
+  ghost.classList.remove('visible');
+  el('col-review').classList.remove('highlight');
+  el('card-nav').style.opacity = '1';
+
+  // move nav card DOM into review
+  const reviewCards = el('col-review');
+  reviewCards.appendChild(el('card-nav'));
+  el('cnt-dev').textContent = '2';
+  el('cnt-review').textContent = '3';
+  await click(revPos.x, revPos.y + 30);
+  await toast('✅ Moved to Review / QA');
+  await wait(600);
+
+  // ── STEP 4: Progress bar fill ────────────────
+  await label('📈  Click a card to bump its progress', 1800);
+  hideCursor();
+  const navPos2 = pos('card-nav');
+  showCursor(navPos2.x - 60, navPos2.y);
+  await moveCursor(navPos2.x, navPos2.y, 600);
+  await click(navPos2.x, navPos2.y);
+  // animate progress to 100%
+  el('nav-prog').style.transition = 'width .8s ease';
+  el('nav-prog').style.width = '100%';
+  el('nav-prog').style.background = '#10b981';
+  el('nav-prog-label').textContent = '100%';
+  await wait(1000);
+
+  // ── STEP 5: Drag nav card to Live ───────────
+  await label('🚀  Drop into Live when it\'s done!', 1800);
+  const navPos3 = pos('card-nav');
+  showCursor(navPos3.x, navPos3.y);
+  const livePos = pos('col-live');
+  el('col-live').classList.add('highlight');
+
+  ghost.classList.add('visible');
+  ghost.style.left = (navPos3.x - 76) + 'px';
+  ghost.style.top  = (navPos3.y - 50) + 'px';
+
+  const steps2 = 30;
+  const dx2 = (livePos.x - navPos3.x) / steps2;
+  const dy2 = (livePos.y - navPos3.y - 20) / steps2;
+  for (let i = 0; i <= steps2; i++) {
+    const px = navPos3.x + dx2*i;
+    const py = navPos3.y + dy2*i;
+    ghost.style.left = (px - 76) + 'px';
+    ghost.style.top  = (py - 50) + 'px';
+    el('cursor').style.transition = 'none';
+    el('cursor').style.left = (px - 10) + 'px';
+    el('cursor').style.top  = (py - 10) + 'px';
+    await wait(28);
+  }
+
+  ghost.classList.remove('visible');
+  el('col-live').classList.remove('highlight');
+  el('card-nav').style.opacity = '.85';
+  el('card-nav').classList.add('done-card');
+  el('col-live').appendChild(el('card-nav'));
+  el('cnt-review').textContent = '2';
+  el('cnt-live').textContent = '4';
+  el('progPill').textContent = '4 / 17 Live (24%)';
+  await click(livePos.x, livePos.y);
+  await toast('🎉 Page is Live!');
+  await wait(800);
+
+  // ── STEP 6: Add new card modal ───────────────
+  await label('➕  Add a new page with the + button', 1800);
+  const btnPos = { x: 710, y: 25 };
+  hideCursor();
+  showCursor(620, 25);
+  await moveCursor(btnPos.x, btnPos.y, 600);
+  await click(btnPos.x, btnPos.y);
+  el('modalOverlay').classList.add('show');
+  el('modalInput').textContent = '';
+  await wait(500);
+  // type characters
+  const text = 'About Us Page';
+  for (const ch of text) {
+    el('modalInput').textContent += ch;
+    await wait(60);
+  }
+  await wait(800);
+
+  // save
+  const savePos = { x: 490, y: 385 };
+  await moveCursor(savePos.x, savePos.y, 400);
+  await click(savePos.x, savePos.y);
+  el('modalOverlay').classList.remove('show');
+
+  // add new card to planning
+  const newCard = document.createElement('div');
+  newCard.className = 'card med new-pop';
+  newCard.innerHTML = `
+    <div class="card-tag tag-page">Page</div>
+    <div class="card-title">About Us Page</div>
+    <div class="card-meta">
+      <div class="avatar" style="background:#F06A35">BM</div>
+      <span class="due">5 Jul</span>
+    </div>`;
+  el('col-backlog').appendChild(newCard);
+  el('cnt-backlog').textContent = '4';
+  await toast('✅ Card added');
+  await wait(800);
+
+  hideCursor();
+  await wait(1200);
+
+  // loop
+  // reset state
+  el('card-nav').classList.remove('done-card');
+  el('col-live').removeChild(el('card-nav'));
+  el('col-dev').insertBefore(el('card-nav'), el('col-dev').querySelector('.card'));
+  el('card-nav').style.opacity = '1';
+  el('nav-prog').style.width = '85%';
+  el('nav-prog').style.background = '#F06A35';
+  el('nav-prog-label').textContent = '85%';
+  el('cnt-dev').textContent = '3';
+  el('cnt-review').textContent = '2';
+  el('cnt-live').textContent = '3';
+  el('cnt-backlog').textContent = '3';
+  el('progPill').textContent = '3 / 17 Live (18%)';
+  newCard.remove();
+  await wait(600);
+  run();
+}
+
+run();
+</script>
+</body>
+</html>

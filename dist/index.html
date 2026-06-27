@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlowBoard — Website Build Kanban</title>
+<style>
+:root {
+  color-scheme: light;
+  --orange: #F06A35;
+  --orange-light: #fff5f2;
+  --purple: #8b5cf6;
+  --green: #10b981;
+  --blue: #3b82f6;
+  --yellow: #f59e0b;
+  --red: #ef4444;
+  --gray: #6b7280;
+  --bg: #f3f4f6;
+  --card-bg: #ffffff;
+  --col-bg: #e9eaed;
+  --border: #e0e0e0;
+  --text: #111827;
+  --text2: #6b7280;
+  --radius: 10px;
+  --shadow: 0 1px 4px rgba(0,0,0,.1);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* ── TOPBAR ── */
+.topbar {
+  background: #fff; border-bottom: 1px solid var(--border);
+  padding: 0 20px; height: 54px;
+  display: flex; align-items: center; gap: 12px;
+  position: sticky; top: 0; z-index: 200;
+  box-shadow: 0 1px 6px rgba(0,0,0,.07);
+}
+.logo { display: flex; align-items: center; gap: 9px; text-decoration: none; }
+.logo-icon { width: 32px; height: 32px; flex-shrink: 0; }
+.logo-text { font-size: 16px; font-weight: 900; letter-spacing: -.3px;
+  background: linear-gradient(135deg, #6366f1 0%, #F06A35 60%, #f59e0b 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.project-name {
+  font-size: 14px; font-weight: 600; color: var(--text2);
+  border: 1.5px solid transparent; border-radius: 6px;
+  padding: 3px 8px; cursor: text;
+  transition: border-color .15s;
+}
+.project-name:hover { border-color: var(--border); }
+.project-name:focus { outline: none; border-color: var(--orange); color: var(--text); }
+.sep { color: #ddd; font-size: 18px; }
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.tb-btn {
+  border: none; border-radius: 8px; cursor: pointer;
+  font-size: 13px; font-weight: 600; padding: 6px 13px;
+  display: flex; align-items: center; gap: 5px;
+  transition: all .15s;
+}
+.tb-btn.ghost { background: #f3f4f6; color: var(--text2); }
+.tb-btn.ghost:hover { background: #e5e7eb; color: var(--text); }
+.tb-btn.primary { background: var(--orange); color: #fff; }
+.tb-btn.primary:hover { background: #d95f2c; }
+.tb-btn.danger { background: #fee2e2; color: var(--red); }
+.tb-btn.danger:hover { background: #fecaca; }
+
+/* ── SUBBAR ── */
+.subbar {
+  background: #fff; border-bottom: 1px solid var(--border);
+  padding: 0 20px; height: 40px;
+  display: flex; align-items: center; gap: 10px;
+}
+.subbar-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text2); }
+.filter-chip {
+  font-size: 12px; font-weight: 600; padding: 3px 10px;
+  border: 1.5px solid var(--border); border-radius: 20px;
+  background: #fff; cursor: pointer; color: var(--text2);
+  transition: all .12s;
+}
+.filter-chip:hover, .filter-chip.active { border-color: var(--orange); color: var(--orange); background: var(--orange-light); }
+.subbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.progress-pill {
+  font-size: 12px; font-weight: 700; padding: 3px 10px;
+  border-radius: 20px; background: var(--orange-light); color: var(--orange);
+}
+
+/* ── BOARD WRAP ── */
+.board-scroll { padding: 18px 20px 40px; overflow-x: auto; min-height: calc(100vh - 94px); }
+.board { display: flex; gap: 12px; align-items: flex-start; min-width: max-content; }
+
+/* ── COLUMN ── */
+.column {
+  width: 250px; flex-shrink: 0;
+  background: var(--col-bg); border-radius: 12px;
+  display: flex; flex-direction: column;
+  min-height: 120px; max-height: calc(100vh - 120px);
+  transition: background .15s;
+}
+.column.drag-over { background: #dfe0e4; outline: 2px dashed var(--orange); outline-offset: -3px; }
+
+.col-head {
+  padding: 11px 12px 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+.col-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.col-name-input {
+  font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .5px;
+  border: none; background: transparent; outline: none; flex: 1;
+  cursor: pointer; color: inherit;
+  min-width: 0;
+}
+.col-name-input:focus { cursor: text; }
+.col-count {
+  font-size: 11px; font-weight: 700; padding: 1px 6px;
+  border-radius: 10px; background: rgba(0,0,0,.1); color: #555;
+  flex-shrink: 0;
+}
+.col-menu-btn {
+  background: none; border: none; cursor: pointer;
+  font-size: 16px; color: #999; padding: 0 3px;
+  border-radius: 4px; line-height: 1;
+  display: none;
+}
+.col-head:hover .col-menu-btn { display: block; }
+.col-menu-btn:hover { background: rgba(0,0,0,.1); color: #333; }
+
+.cards-list {
+  padding: 4px 8px 10px; display: flex; flex-direction: column; gap: 7px;
+  overflow-y: auto; flex: 1;
+}
+.cards-list::-webkit-scrollbar { width: 4px; }
+.cards-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+
+.col-add-btn {
+  margin: 0 8px 10px; padding: 7px; border: 2px dashed #ccc;
+  border-radius: 8px; background: none; cursor: pointer;
+  font-size: 12px; font-weight: 600; color: #aaa;
+  text-align: center; transition: all .15s;
+}
+.col-add-btn:hover { border-color: var(--orange); color: var(--orange); background: var(--orange-light); }
+
+/* ── CARD ── */
+.card {
+  background: var(--card-bg); border-radius: 9px;
+  padding: 11px 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 0 0 1px rgba(0,0,0,.04);
+  cursor: grab; position: relative;
+  transition: box-shadow .15s, transform .1s, opacity .15s;
+  border-left: 3px solid transparent;
+}
+.card:hover { box-shadow: 0 3px 10px rgba(0,0,0,.12); }
+.card.dragging { opacity: .4; transform: scale(.96); cursor: grabbing; }
+.card.drop-above { border-top: 2px solid var(--orange); }
+.card.priority-high { border-left-color: var(--red); }
+.card.priority-med  { border-left-color: var(--yellow); }
+.card.priority-low  { border-left-color: var(--green); }
+
+/* Card actions (hover) */
+.card-actions {
+  position: absolute; top: 7px; right: 8px;
+  display: none; gap: 4px;
+}
+.card:hover .card-actions { display: flex; }
+.card-action-btn {
+  background: rgba(255,255,255,.92); border: 1px solid #e0e0e0;
+  border-radius: 5px; cursor: pointer; font-size: 12px;
+  padding: 2px 5px; line-height: 1.4;
+  transition: all .1s;
+}
+.card-action-btn:hover { background: #f3f4f6; }
+
+/* Card content */
+.card-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 5px; }
+.tag {
+  font-size: 10px; font-weight: 700; padding: 2px 7px;
+  border-radius: 10px; letter-spacing: .3px; text-transform: uppercase;
+}
+.tag-page    { background: #dbeafe; color: #1d4ed8; }
+.tag-design  { background: #ede9fe; color: #6d28d9; }
+.tag-dev     { background: #d1fae5; color: #065f46; }
+.tag-seo     { background: #fef3c7; color: #92400e; }
+.tag-content { background: #fee2e2; color: #991b1b; }
+
+.card-title {
+  font-size: 13px; font-weight: 600; line-height: 1.35;
+  color: var(--text); margin-bottom: 8px; word-break: break-word;
+}
+.card-meta { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.avatar {
+  width: 22px; height: 22px; border-radius: 50%;
+  font-size: 9px; font-weight: 800; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; text-transform: uppercase; letter-spacing: .5px;
+}
+.due-date { font-size: 11px; color: var(--text2); }
+.due-date.late { color: var(--red); font-weight: 700; }
+.due-date.soon { color: var(--yellow); font-weight: 700; }
+
+.card-prog { margin-top: 8px; }
+.prog-bar { height: 4px; background: #e5e7eb; border-radius: 3px; overflow: hidden; }
+.prog-fill { height: 100%; border-radius: 3px; transition: width .4s ease; }
+.prog-label { font-size: 10px; color: var(--text2); text-align: right; margin-top: 2px; }
+
+/* ── EMPTY DROP ZONE ── */
+.empty-zone {
+  border: 2px dashed #d1d5db; border-radius: 8px;
+  padding: 20px 12px; text-align: center;
+  color: #9ca3af; font-size: 12px;
+  font-weight: 500;
+}
+
+/* ── ADD COLUMN ── */
+.add-column-btn {
+  width: 46px; height: 46px; flex-shrink: 0;
+  border: 2px dashed #d1d5db; border-radius: 12px;
+  background: rgba(255,255,255,.6); cursor: pointer;
+  font-size: 22px; color: #9ca3af;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s; align-self: flex-start; margin-top: 2px;
+}
+.add-column-btn:hover { border-color: var(--orange); color: var(--orange); background: var(--orange-light); }
+
+/* ── MODAL ── */
+.overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.4); z-index: 500;
+  align-items: center; justify-content: center; padding: 20px;
+}
+.overlay.open { display: flex; }
+.modal {
+  background: #fff; border-radius: 14px; width: 420px;
+  box-shadow: 0 25px 60px rgba(0,0,0,.25); overflow: hidden;
+}
+.modal-header {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-header h2 { font-size: 15px; font-weight: 700; }
+.modal-close {
+  background: none; border: none; font-size: 20px;
+  cursor: pointer; color: #9ca3af; line-height: 1;
+  padding: 0 4px; border-radius: 4px;
+}
+.modal-close:hover { background: #f3f4f6; color: var(--text); }
+.modal-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 13px; }
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label { font-size: 12px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: .4px; }
+.field input, .field select, .field textarea {
+  border: 1.5px solid #e5e7eb; border-radius: 8px;
+  padding: 8px 11px; font-size: 13px; font-family: inherit;
+  outline: none; transition: border-color .15s; color: var(--text);
+  background: #fff;
+}
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--orange); }
+.field textarea { resize: vertical; min-height: 60px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.progress-row { display: flex; align-items: center; gap: 10px; }
+.progress-row input[type=range] { flex: 1; accent-color: var(--orange); }
+.progress-row span { font-size: 13px; font-weight: 700; color: var(--orange); min-width: 32px; text-align: right; }
+.modal-footer {
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.modal-footer-right { display: flex; gap: 8px; }
+
+/* ── CONTEXT MENU ── */
+.ctx-menu {
+  position: fixed; background: #fff; border-radius: 9px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.18), 0 0 0 1px rgba(0,0,0,.06);
+  padding: 5px 0; z-index: 600; min-width: 160px; display: none;
+}
+.ctx-menu.open { display: block; }
+.ctx-item {
+  padding: 8px 14px; font-size: 13px; cursor: pointer;
+  display: flex; align-items: center; gap: 8px; color: var(--text);
+  transition: background .1s;
+}
+.ctx-item:hover { background: #f3f4f6; }
+.ctx-item.danger { color: var(--red); }
+.ctx-item.danger:hover { background: #fee2e2; }
+.ctx-sep { height: 1px; background: var(--border); margin: 4px 0; }
+
+/* ── TOAST ── */
+.toast-wrap { position: fixed; bottom: 20px; right: 20px; z-index: 700; display: flex; flex-direction: column; gap: 8px; }
+.toast {
+  background: #1f2937; color: #fff; font-size: 13px; font-weight: 500;
+  padding: 10px 16px; border-radius: 9px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.25);
+  animation: slideUp .2s ease; pointer-events: none;
+}
+@keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo">
+    <!-- FlowBoard logo: lightning bolt inside gradient kanban columns -->
+    <svg class="logo-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#6366f1"/>
+          <stop offset="100%" stop-color="#F06A35"/>
+        </linearGradient>
+        <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#F06A35"/>
+          <stop offset="100%" stop-color="#f59e0b"/>
+        </linearGradient>
+        <linearGradient id="g3" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#10b981"/>
+          <stop offset="100%" stop-color="#6366f1"/>
+        </linearGradient>
+      </defs>
+      <!-- Rounded board background -->
+      <rect width="32" height="32" rx="8" fill="url(#g1)"/>
+      <!-- Three kanban columns -->
+      <rect x="4" y="8" width="5" height="16" rx="2" fill="white" opacity="0.35"/>
+      <rect x="4" y="8" width="5" height="9" rx="2" fill="white" opacity="0.9"/>
+      <rect x="13.5" y="8" width="5" height="16" rx="2" fill="white" opacity="0.35"/>
+      <rect x="13.5" y="8" width="5" height="13" rx="2" fill="white" opacity="0.9"/>
+      <rect x="23" y="8" width="5" height="16" rx="2" fill="white" opacity="0.35"/>
+      <rect x="23" y="8" width="5" height="6" rx="2" fill="white" opacity="0.9"/>
+      <!-- Lightning bolt accent -->
+      <path d="M17.5 4 L12 15h5L11.5 28 22 14h-6L17.5 4Z" fill="white" opacity="0" />
+    </svg>
+    <span class="logo-text">FlowBoard</span>
+  </div>
+  <span class="sep">›</span>
+  <input class="project-name" id="projectName" type="text" value="Website Build" spellcheck="false">
+  <div class="topbar-right">
+    <button class="tb-btn ghost" onclick="exportJSON()">⬇ Export</button>
+    <button class="tb-btn ghost" onclick="importJSON()">⬆ Import</button>
+    <button class="tb-btn danger" onclick="resetBoard()" title="Reset to defaults">↺ Reset</button>
+    <button class="tb-btn primary" onclick="openCardModal(null, null)">+ Add Card</button>
+  </div>
+</div>
+
+<!-- SUB BAR -->
+<div class="subbar">
+  <span class="subbar-label">Filter:</span>
+  <button class="filter-chip active" data-filter="all"   onclick="setFilter('all',this)">All</button>
+  <button class="filter-chip" data-filter="page"    onclick="setFilter('page',this)">Pages</button>
+  <button class="filter-chip" data-filter="design"  onclick="setFilter('design',this)">Design</button>
+  <button class="filter-chip" data-filter="dev"     onclick="setFilter('dev',this)">Dev</button>
+  <button class="filter-chip" data-filter="seo"     onclick="setFilter('seo',this)">SEO</button>
+  <button class="filter-chip" data-filter="content" onclick="setFilter('content',this)">Content</button>
+  <button class="filter-chip" data-filter="high"    onclick="setFilter('high',this)">🔴 High</button>
+  <div class="subbar-right">
+    <div class="progress-pill" id="globalProg">...</div>
+  </div>
+</div>
+
+<!-- BOARD -->
+<div class="board-scroll">
+  <div class="board" id="board">
+    <button class="add-column-btn" id="addColBtn" onclick="addColumn()" title="Add column">+</button>
+  </div>
+</div>
+
+<!-- CARD MODAL -->
+<div class="overlay" id="cardOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalTitle">Add Card</h2>
+      <button class="modal-close" onclick="closeCardModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Page / Task Name *</label>
+        <input type="text" id="f-title" placeholder="e.g. About Us Page">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Type</label>
+          <select id="f-type">
+            <option value="page">📄 Page</option>
+            <option value="design">🎨 Design</option>
+            <option value="dev">💻 Dev</option>
+            <option value="seo">🔍 SEO</option>
+            <option value="content">✍️ Content</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Priority</label>
+          <select id="f-priority">
+            <option value="high">🔴 High</option>
+            <option value="med" selected>🟡 Medium</option>
+            <option value="low">🟢 Low</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Assignee</label>
+          <input type="text" id="f-assignee" placeholder="Initials e.g. BM" maxlength="3">
+        </div>
+        <div class="field">
+          <label>Due Date</label>
+          <input type="date" id="f-due">
+        </div>
+      </div>
+      <div class="field">
+        <label>Column</label>
+        <select id="f-col"></select>
+      </div>
+      <div class="field">
+        <label>Progress: <span id="f-prog-val">0</span>%</label>
+        <div class="progress-row">
+          <input type="range" id="f-progress" min="0" max="100" value="0" step="5"
+                 oninput="document.getElementById('f-prog-val').textContent=this.value">
+        </div>
+      </div>
+      <div class="field">
+        <label>Notes</label>
+        <textarea id="f-notes" placeholder="Optional description or notes…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div id="modal-delete-btn"></div>
+      <div class="modal-footer-right">
+        <button class="tb-btn ghost" onclick="closeCardModal()">Cancel</button>
+        <button class="tb-btn primary" onclick="saveCard()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTEXT MENU -->
+<div class="ctx-menu" id="ctxMenu">
+  <div class="ctx-item" id="ctx-edit">✏️ Edit</div>
+  <div class="ctx-item" id="ctx-move">↔️ Move to…</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item danger" id="ctx-delete">🗑 Delete</div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- HIDDEN FILE INPUT -->
+<input type="file" id="fileInput" style="display:none" accept=".json" onchange="handleImport(event)">
+
+<script>
+// ═══════════════════════════════════════════════
+// DATA LAYER  (localStorage "backend")
+// ═══════════════════════════════════════════════
+const DB_KEY = 'webkanban_v2';
+
+const DEFAULT_COLUMNS = [
+  { id: 'backlog',  name: 'Backlog',        color: '#9ca3af' },
+  { id: 'plan',     name: 'Planning',       color: '#6366f1' },
+  { id: 'design',   name: 'Design',         color: '#8b5cf6' },
+  { id: 'dev',      name: 'In Development', color: '#F06A35' },
+  { id: 'review',   name: 'Review / QA',    color: '#f59e0b' },
+  { id: 'live',     name: '✅ Live',          color: '#10b981' },
+];
+
+const DEFAULT_CARDS = [
+  { id:1, col:'backlog', title:'Blog Listing Page',       type:'page',    priority:'med', assignee:'JD', due:'2026-07-20', progress:0,  notes:'' },
+  { id:2, col:'backlog', title:'Careers Page',            type:'page',    priority:'low', assignee:'AL', due:'2026-07-28', progress:0,  notes:'' },
+  { id:3, col:'backlog', title:'FAQ / Help Centre',       type:'content', priority:'low', assignee:'SM', due:'2026-08-05', progress:0,  notes:'' },
+  { id:4, col:'plan',    title:'Homepage Wireframe',      type:'design',  priority:'high',assignee:'BM', due:'2026-06-28', progress:20, notes:'Awaiting stakeholder sign-off' },
+  { id:5, col:'plan',    title:'Pricing Page Structure',  type:'page',    priority:'med', assignee:'KR', due:'2026-07-02', progress:15, notes:'' },
+  { id:6, col:'design',  title:'Homepage Visual Design',  type:'design',  priority:'high',assignee:'BM', due:'2026-06-30', progress:65, notes:'Figma file in review' },
+  { id:7, col:'design',  title:'About Us Page Design',    type:'design',  priority:'med', assignee:'JD', due:'2026-07-03', progress:40, notes:'' },
+  { id:8, col:'design',  title:'Mobile Responsive Specs', type:'design',  priority:'high',assignee:'BM', due:'2026-07-01', progress:30, notes:'' },
+  { id:9, col:'dev',     title:'Navigation & Header',     type:'dev',     priority:'high',assignee:'TS', due:'2026-06-26', progress:85, notes:'Sticky nav + mobile hamburger' },
+  { id:10,col:'dev',     title:'Contact Us Page',         type:'dev',     priority:'med', assignee:'KR', due:'2026-06-29', progress:60, notes:'' },
+  { id:11,col:'dev',     title:'Footer Component',        type:'dev',     priority:'med', assignee:'TS', due:'2026-06-27', progress:75, notes:'' },
+  { id:12,col:'dev',     title:'SEO Meta Tags Setup',     type:'seo',     priority:'high',assignee:'SM', due:'2026-06-28', progress:50, notes:'Schema markup needed' },
+  { id:13,col:'review',  title:'Landing Page (Hero)',     type:'page',    priority:'high',assignee:'BM', due:'2026-06-25', progress:95, notes:'Final copy approval pending' },
+  { id:14,col:'review',  title:'Services Overview Page',  type:'page',    priority:'med', assignee:'JD', due:'2026-06-27', progress:90, notes:'' },
+  { id:15,col:'live',    title:'Coming Soon Page',        type:'page',    priority:'low', assignee:'BM', due:'2026-06-10', progress:100,notes:'Launched ✓' },
+  { id:16,col:'live',    title:'Privacy Policy Page',     type:'content', priority:'low', assignee:'AL', due:'2026-06-12', progress:100,notes:'Launched ✓' },
+  { id:17,col:'live',    title:'Google Analytics Setup',  type:'seo',     priority:'med', assignee:'SM', due:'2026-06-15', progress:100,notes:'GA4 + GTM ✓' },
+];
+
+function loadDB() {
+  try {
+    const raw = localStorage.getItem(DB_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return null;
+}
+
+function saveDB() {
+  localStorage.setItem(DB_KEY, JSON.stringify({ columns, cards, projectName: document.getElementById('projectName').value }));
+}
+
+let db = loadDB();
+let columns = db ? db.columns : JSON.parse(JSON.stringify(DEFAULT_COLUMNS));
+let cards   = db ? db.cards   : JSON.parse(JSON.stringify(DEFAULT_CARDS));
+let nextId  = db ? (Math.max(0, ...cards.map(c => c.id)) + 1) : 18;
+if (db?.projectName) document.getElementById('projectName').value = db.projectName;
+
+document.getElementById('projectName').addEventListener('input', saveDB);
+
+// ═══════════════════════════════════════════════
+// AVATAR COLORS
+// ═══════════════════════════════════════════════
+const COLOR_POOL = ['#F06A35','#6366f1','#10b981','#f59e0b','#8b5cf6','#ef4444','#14b8a6','#ec4899'];
+const avatarColors = {};
+function avatarColor(initials) {
+  const key = (initials||'?').toUpperCase().slice(0,2);
+  if (!avatarColors[key]) {
+    const idx = Object.keys(avatarColors).length % COLOR_POOL.length;
+    avatarColors[key] = COLOR_POOL[idx];
+  }
+  return avatarColors[key];
+}
+
+// ═══════════════════════════════════════════════
+// DATE HELPERS
+// ═══════════════════════════════════════════════
+function todayStr() { return new Date().toISOString().split('T')[0]; }
+function dueClass(d) {
+  if (!d) return '';
+  const diff = Math.ceil((new Date(d) - new Date(todayStr())) / 86400000);
+  return diff < 0 ? 'late' : diff <= 3 ? 'soon' : '';
+}
+function fmtDate(iso) {
+  if (!iso) return '';
+  const [,m,d] = iso.split('-');
+  return `${+d} ${['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m]}`;
+}
+function progressColor(p) {
+  return p >= 100 ? '#10b981' : p >= 60 ? '#F06A35' : p >= 30 ? '#6366f1' : '#d1d5db';
+}
+
+// ═══════════════════════════════════════════════
+// FILTER
+// ═══════════════════════════════════════════════
+let activeFilter = 'all';
+function setFilter(f, btn) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderBoard();
+}
+function matchesFilter(card) {
+  if (activeFilter === 'all') return true;
+  if (activeFilter === 'high') return card.priority === 'high';
+  return card.type === activeFilter;
+}
+
+// ═══════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════
+function render() { renderBoard(); renderGlobalProg(); saveDB(); }
+
+function renderGlobalProg() {
+  const live = cards.filter(c => c.col === 'live').length;
+  const total = cards.length;
+  const pct = total ? Math.round(live / total * 100) : 0;
+  document.getElementById('globalProg').textContent = `${live}/${total} Live (${pct}%)`;
+}
+
+function renderBoard() {
+  const board = document.getElementById('board');
+  const addBtn = document.getElementById('addColBtn');
+
+  // Remove all columns but keep addBtn
+  board.querySelectorAll('.column').forEach(el => el.remove());
+
+  columns.forEach(col => {
+    const colCards = cards.filter(c => c.col === col.id && matchesFilter(c));
+    const colEl = makeColumn(col, colCards);
+    board.insertBefore(colEl, addBtn);
+  });
+
+  renderGlobalProg();
+  initDragDrop();
+}
+
+function makeColumn(col, colCards) {
+  const el = document.createElement('div');
+  el.className = 'column';
+  el.dataset.col = col.id;
+
+  el.innerHTML = `
+    <div class="col-head">
+      <div class="col-dot" style="background:${col.color}"></div>
+      <input class="col-name-input" value="${escHtml(col.name)}" style="color:${col.color}"
+             onchange="renameCol('${col.id}', this.value)" spellcheck="false">
+      <span class="col-count">${colCards.length}</span>
+      <button class="col-menu-btn" onclick="showColMenu(event,'${col.id}')">⋯</button>
+    </div>
+    <div class="cards-list" id="list-${col.id}">
+      ${colCards.length === 0 ? '<div class="empty-zone">Drop cards here</div>' : colCards.map(cardHTML).join('')}
+    </div>
+    <button class="col-add-btn" onclick="openCardModal(null, '${col.id}')">+ Add card</button>
+  `;
+
+  return el;
+}
+
+function cardHTML(c) {
+  const dc = dueClass(c.due);
+  const ini = (c.assignee||'?').toUpperCase().slice(0,2);
+  const prioClass = { high:'priority-high', med:'priority-med', low:'priority-low' }[c.priority] || '';
+  const prioEmoji = { high:'🔴', med:'🟡', low:'🟢' }[c.priority] || '';
+  return `<div class="card ${prioClass}" draggable="true" data-id="${c.id}"
+               ondblclick="openCardModal(${c.id})"
+               oncontextmenu="showCardCtx(event,${c.id})">
+    <div class="card-actions">
+      <button class="card-action-btn" onclick="openCardModal(${c.id}); event.stopPropagation();" title="Edit">✏️</button>
+      <button class="card-action-btn" onclick="deleteCard(${c.id}); event.stopPropagation();" title="Delete">🗑</button>
+    </div>
+    <div class="card-tags"><span class="tag tag-${c.type}">${c.type}</span></div>
+    <div class="card-title">${escHtml(c.title)}&nbsp;<span style="font-size:11px">${prioEmoji}</span></div>
+    <div class="card-meta">
+      <div class="avatar" style="background:${avatarColor(ini)}" title="${ini}">${ini}</div>
+      ${c.due ? `<span class="due-date ${dc}" title="${c.due}">📅 ${fmtDate(c.due)}</span>` : ''}
+    </div>
+    ${c.progress > 0 ? `
+      <div class="card-prog">
+        <div class="prog-bar"><div class="prog-fill" style="width:${c.progress}%;background:${progressColor(c.progress)}"></div></div>
+        <div class="prog-label">${c.progress}%</div>
+      </div>` : ''}
+    ${c.notes ? `<div style="font-size:10px;color:#9ca3af;margin-top:5px;font-style:italic">${escHtml(c.notes.slice(0,60))}${c.notes.length>60?'…':''}</div>` : ''}
+  </div>`;
+}
+
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ═══════════════════════════════════════════════
+// DRAG & DROP
+// ═══════════════════════════════════════════════
+let dragId = null;
+
+function initDragDrop() {
+  document.querySelectorAll('.card[draggable]').forEach(el => {
+    el.addEventListener('dragstart', e => {
+      dragId = +el.dataset.id;
+      el.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    el.addEventListener('dragend', () => {
+      el.classList.remove('dragging');
+      dragId = null;
+      document.querySelectorAll('.card.drop-above').forEach(c => c.classList.remove('drop-above'));
+    });
+  });
+
+  document.querySelectorAll('.column').forEach(col => {
+    const list = col.querySelector('.cards-list');
+    col.addEventListener('dragover', e => {
+      e.preventDefault();
+      col.classList.add('drag-over');
+    });
+    col.addEventListener('dragleave', e => {
+      if (!col.contains(e.relatedTarget)) col.classList.remove('drag-over');
+    });
+    col.addEventListener('drop', e => {
+      e.preventDefault();
+      col.classList.remove('drag-over');
+      if (!dragId) return;
+      const card = cards.find(c => c.id === dragId);
+      if (!card) return;
+      card.col = col.dataset.col;
+      if (col.dataset.col === 'live') card.progress = 100;
+      render();
+      toast(`Moved to ${columns.find(c=>c.id===col.dataset.col)?.name || col.dataset.col}`);
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════
+// CARD MODAL
+// ═══════════════════════════════════════════════
+let editingId = null;
+let editingColPrefill = null;
+
+function openCardModal(id, colPrefill) {
+  closeCtx();
+  editingId = id;
+  editingColPrefill = colPrefill;
+
+  // populate column select
+  const sel = document.getElementById('f-col');
+  sel.innerHTML = columns.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+  if (id != null) {
+    const c = cards.find(x => x.id === id);
+    if (!c) return;
+    document.getElementById('modalTitle').textContent = 'Edit Card';
+    document.getElementById('f-title').value    = c.title;
+    document.getElementById('f-type').value     = c.type;
+    document.getElementById('f-priority').value = c.priority;
+    document.getElementById('f-assignee').value = c.assignee || '';
+    document.getElementById('f-due').value      = c.due || '';
+    document.getElementById('f-col').value      = c.col;
+    document.getElementById('f-progress').value = c.progress;
+    document.getElementById('f-prog-val').textContent = c.progress;
+    document.getElementById('f-notes').value    = c.notes || '';
+    document.getElementById('modal-delete-btn').innerHTML =
+      `<button class="tb-btn danger" onclick="deleteCard(${id});closeCardModal()">🗑 Delete</button>`;
+  } else {
+    document.getElementById('modalTitle').textContent = 'Add Card';
+    document.getElementById('f-title').value    = '';
+    document.getElementById('f-type').value     = 'page';
+    document.getElementById('f-priority').value = 'med';
+    document.getElementById('f-assignee').value = '';
+    document.getElementById('f-due').value      = '';
+    document.getElementById('f-col').value      = colPrefill || columns[0]?.id || '';
+    document.getElementById('f-progress').value = 0;
+    document.getElementById('f-prog-val').textContent = 0;
+    document.getElementById('f-notes').value    = '';
+    document.getElementById('modal-delete-btn').innerHTML = '';
+  }
+
+  document.getElementById('cardOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('f-title').focus(), 50);
+}
+
+function closeCardModal() {
+  document.getElementById('cardOverlay').classList.remove('open');
+}
+
+function saveCard() {
+  const title = document.getElementById('f-title').value.trim();
+  if (!title) { document.getElementById('f-title').focus(); return; }
+
+  const data = {
+    title,
+    type:     document.getElementById('f-type').value,
+    priority: document.getElementById('f-priority').value,
+    assignee: document.getElementById('f-assignee').value.trim().toUpperCase().slice(0,3),
+    due:      document.getElementById('f-due').value,
+    col:      document.getElementById('f-col').value,
+    progress: +document.getElementById('f-progress').value,
+    notes:    document.getElementById('f-notes').value.trim(),
+  };
+
+  if (editingId != null) {
+    const idx = cards.findIndex(c => c.id === editingId);
+    if (idx >= 0) cards[idx] = { ...cards[idx], ...data };
+    toast('Card updated');
+  } else {
+    cards.push({ id: nextId++, ...data });
+    toast('Card added');
+  }
+
+  closeCardModal();
+  render();
+}
+
+// ═══════════════════════════════════════════════
+// DELETE
+// ═══════════════════════════════════════════════
+function deleteCard(id) {
+  cards = cards.filter(c => c.id !== id);
+  render();
+  toast('Card deleted');
+}
+
+// ═══════════════════════════════════════════════
+// COLUMNS
+// ═══════════════════════════════════════════════
+const COL_COLORS = ['#9ca3af','#6366f1','#8b5cf6','#F06A35','#f59e0b','#10b981','#14b8a6','#ec4899'];
+function addColumn() {
+  const name = prompt('Column name:');
+  if (!name || !name.trim()) return;
+  const id = 'col_' + Date.now();
+  const color = COL_COLORS[columns.length % COL_COLORS.length];
+  columns.push({ id, name: name.trim(), color });
+  render();
+  toast(`Column "${name}" added`);
+}
+
+function renameCol(id, name) {
+  const col = columns.find(c => c.id === id);
+  if (col) { col.name = name; saveDB(); }
+}
+
+let ctxColId = null;
+function showColMenu(e, colId) {
+  e.stopPropagation();
+  ctxColId = colId;
+  const menu = document.getElementById('ctxMenu');
+  document.getElementById('ctx-edit').textContent = '🎨 Change color';
+  document.getElementById('ctx-edit').onclick = () => { changeColColor(colId); closeCtx(); };
+  document.getElementById('ctx-move').textContent = '↔️ Move column left';
+  document.getElementById('ctx-move').onclick = () => { moveColLeft(colId); closeCtx(); };
+  document.getElementById('ctx-delete').onclick = () => { deleteColumn(colId); closeCtx(); };
+  positionCtx(e, menu);
+}
+
+function changeColColor(id) {
+  const col = columns.find(c => c.id === id);
+  if (!col) return;
+  const input = document.createElement('input');
+  input.type = 'color'; input.value = col.color;
+  input.onchange = () => { col.color = input.value; render(); };
+  input.click();
+}
+
+function moveColLeft(id) {
+  const i = columns.findIndex(c => c.id === id);
+  if (i > 0) { [columns[i-1], columns[i]] = [columns[i], columns[i-1]]; render(); toast('Column moved'); }
+}
+
+function deleteColumn(id) {
+  if (!confirm(`Delete this column? Cards in it will be moved to Backlog.`)) return;
+  cards.forEach(c => { if (c.col === id) c.col = columns[0]?.id || 'backlog'; });
+  columns = columns.filter(c => c.id !== id);
+  render(); toast('Column deleted');
+}
+
+// ═══════════════════════════════════════════════
+// CONTEXT MENU (card right-click)
+// ═══════════════════════════════════════════════
+let ctxCardId = null;
+function showCardCtx(e, id) {
+  e.preventDefault(); e.stopPropagation();
+  ctxCardId = id;
+  const menu = document.getElementById('ctxMenu');
+  document.getElementById('ctx-edit').textContent = '✏️ Edit card';
+  document.getElementById('ctx-edit').onclick = () => { openCardModal(ctxCardId); closeCtx(); };
+  document.getElementById('ctx-move').textContent = '↔️ Move to…';
+  document.getElementById('ctx-move').onclick = () => {
+    const names = columns.map(c => c.name).join('\n');
+    const choice = prompt(`Move to column:\n${columns.map((c,i)=>`${i+1}. ${c.name}`).join('\n')}\n\nEnter number:`);
+    const idx = parseInt(choice) - 1;
+    if (idx >= 0 && idx < columns.length) {
+      const card = cards.find(c => c.id === ctxCardId);
+      if (card) { card.col = columns[idx].id; render(); toast(`Moved to ${columns[idx].name}`); }
+    }
+    closeCtx();
+  };
+  document.getElementById('ctx-delete').onclick = () => { deleteCard(ctxCardId); closeCtx(); };
+  positionCtx(e, menu);
+}
+
+function positionCtx(e, menu) {
+  menu.style.left = e.clientX + 'px';
+  menu.style.top  = e.clientY + 'px';
+  menu.classList.add('open');
+}
+function closeCtx() { document.getElementById('ctxMenu').classList.remove('open'); }
+
+// ═══════════════════════════════════════════════
+// IMPORT / EXPORT
+// ═══════════════════════════════════════════════
+function exportJSON() {
+  const data = { projectName: document.getElementById('projectName').value, columns, cards };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'website-kanban.json';
+  a.click();
+  toast('Exported JSON');
+}
+function importJSON() { document.getElementById('fileInput').click(); }
+function handleImport(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (data.columns) columns = data.columns;
+      if (data.cards)   cards   = data.cards;
+      if (data.projectName) document.getElementById('projectName').value = data.projectName;
+      nextId = Math.max(0, ...cards.map(c => c.id)) + 1;
+      render();
+      toast('Board imported ✓');
+    } catch { alert('Invalid JSON file.'); }
+  };
+  reader.readAsText(file);
+}
+
+// ═══════════════════════════════════════════════
+// RESET
+// ═══════════════════════════════════════════════
+function resetBoard() {
+  if (!confirm('Reset to default board? This clears all your changes.')) return;
+  columns = JSON.parse(JSON.stringify(DEFAULT_COLUMNS));
+  cards   = JSON.parse(JSON.stringify(DEFAULT_CARDS));
+  nextId  = 18;
+  document.getElementById('projectName').value = 'Website Build';
+  localStorage.removeItem(DB_KEY);
+  render();
+  toast('Board reset to defaults');
+}
+
+// ═══════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════
+function toast(msg) {
+  const wrap = document.getElementById('toastWrap');
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(() => el.remove(), 2200);
+}
+
+// ═══════════════════════════════════════════════
+// GLOBAL EVENTS
+// ═══════════════════════════════════════════════
+document.addEventListener('click', closeCtx);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeCardModal(); closeCtx(); }
+});
+document.getElementById('cardOverlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeCardModal();
+});
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlowBoard — Social Cards</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0f0f0f;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 60px;
+    color: #fff;
+  }
+
+  .label {
+    text-align: center;
+    margin-bottom: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #666;
+  }
+
+  /* ─── SQUARE 1080×1080 ─────────────────────────────── */
+  .card-square {
+    width: 1080px;
+    height: 1080px;
+    position: relative;
+    overflow: hidden;
+    background: #0a0a0f;
+    transform-origin: top left;
+    transform: scale(0.5);
+    margin-bottom: -540px;
+  }
+
+  /* ─── STORY 1080×1920 ─────────────────────────────── */
+  .card-story {
+    width: 1080px;
+    height: 1920px;
+    position: relative;
+    overflow: hidden;
+    background: #0a0a0f;
+    transform-origin: top left;
+    transform: scale(0.36);
+    margin-bottom: -1228px;
+  }
+
+  /* ─── LANDSCAPE 1200×630 (OG/Twitter) ─────────────── */
+  .card-landscape {
+    width: 1200px;
+    height: 630px;
+    position: relative;
+    overflow: hidden;
+    background: #0a0a0f;
+    transform-origin: top left;
+    transform: scale(0.6);
+    margin-bottom: -252px;
+  }
+
+  /* ──────────────────────────────────────────────────── */
+  /* SHARED CARD ELEMENTS */
+  /* ──────────────────────────────────────────────────── */
+
+  .bg-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  .bg-glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.35;
+  }
+
+  /* Orange accent top-left */
+  .glow-orange {
+    width: 600px; height: 600px;
+    background: #F06A35;
+    top: -200px; left: -100px;
+  }
+  /* Purple accent bottom-right */
+  .glow-purple {
+    width: 500px; height: 500px;
+    background: #6366f1;
+    bottom: -150px; right: -100px;
+  }
+  /* Teal accent center */
+  .glow-teal {
+    width: 300px; height: 300px;
+    background: #10b981;
+    top: 50%; left: 60%;
+    transform: translate(-50%,-50%);
+    opacity: 0.18;
+  }
+
+  .noise {
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  /* ─── KANBAN MINI MOCKUP ───────────────────────────── */
+  .kanban-mockup {
+    position: absolute;
+    display: flex;
+    gap: 10px;
+  }
+  .kol {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .kol-header {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .kol-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .kcard {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 7px;
+    padding: 8px 10px;
+    font-size: 10px;
+    color: rgba(255,255,255,0.7);
+    line-height: 1.4;
+  }
+  .kcard-tag {
+    display: inline-block;
+    font-size: 8px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-bottom: 4px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .tag-page   { background: rgba(99,102,241,0.3); color: #a5b4fc; }
+  .tag-design { background: rgba(139,92,246,0.3); color: #c4b5fd; }
+  .tag-dev    { background: rgba(240,106,53,0.3); color: #fdba74; }
+  .tag-live   { background: rgba(16,185,129,0.3); color: #6ee7b7; }
+
+  .progress-bar {
+    height: 3px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    margin-top: 5px;
+    overflow: hidden;
+  }
+  .progress-fill { height: 100%; border-radius: 2px; }
+
+  /* ─── FEATURE PILLS ───────────────────────────────── */
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 100px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.75);
+    backdrop-filter: blur(4px);
+  }
+  .pill-icon {
+    width: 18px; height: 18px;
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+  }
+
+  /* ─── LOGO MARK ───────────────────────────────────── */
+  .logo-mark {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo-icon {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, #F06A35, #e04a15);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 30px rgba(240,106,53,0.4);
+  }
+  .logo-text-main {
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .logo-text-sub {
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.45);
+    margin-top: 3px;
+    letter-spacing: 0.04em;
+  }
+
+  /* ─── URL CHIP ────────────────────────────────────── */
+  .url-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(240,106,53,0.12);
+    border: 1px solid rgba(240,106,53,0.3);
+    border-radius: 100px;
+    padding: 8px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #F06A35;
+    letter-spacing: 0.01em;
+  }
+  .url-chip svg { opacity: 0.7; }
+
+  /* ─── GITHUB CHIP ─────────────────────────────────── */
+  .gh-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 100px;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.6);
+  }
+
+  /* ─── CLAUDE PLUGIN CHIP ──────────────────────────── */
+  .plugin-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(99,102,241,0.12);
+    border: 1px solid rgba(99,102,241,0.3);
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(165,180,252,0.9);
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+
+  /* ─── DIVIDER ─────────────────────────────────────── */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+  }
+
+  /* ─── BADGE ───────────────────────────────────────── */
+  .badge-free {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 100px;
+  }
+
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- CARD 1: SQUARE 1080×1080 (Instagram / LinkedIn / Facebook feed) -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div>
+  <div class="label">Square 1080×1080 — Instagram / Facebook / LinkedIn feed</div>
+  <div class="card-square" id="sq">
+    <div class="bg-grid"></div>
+    <div class="bg-glow glow-orange"></div>
+    <div class="bg-glow glow-purple"></div>
+    <div class="bg-glow glow-teal"></div>
+    <div class="noise"></div>
+
+    <!-- CONTENT -->
+    <div style="position:absolute; inset:0; display:flex; flex-direction:column; padding:72px; justify-content:space-between;">
+
+      <!-- TOP: Logo + Badge -->
+      <div style="display:flex; align-items:flex-start; justify-content:space-between;">
+        <div class="logo-mark">
+          <div class="logo-icon">
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+              <rect x="2" y="4" width="5" height="18" rx="2" fill="white" opacity="0.9"/>
+              <rect x="10.5" y="8" width="5" height="14" rx="2" fill="white" opacity="0.9"/>
+              <rect x="19" y="2" width="5" height="22" rx="2" fill="white" opacity="0.6"/>
+            </svg>
+          </div>
+          <div>
+            <div class="logo-text-main" style="font-size:28px; color:#fff;">FlowBoard</div>
+            <div class="logo-text-sub">by Vel AI Consulting</div>
+          </div>
+        </div>
+        <div class="badge-free">Free</div>
+      </div>
+
+      <!-- MIDDLE: Headline + Kanban mockup -->
+      <div style="flex:1; display:flex; flex-direction:column; justify-content:center; gap:48px;">
+
+        <!-- Headline -->
+        <div>
+          <div style="font-size:72px; font-weight:900; line-height:1.0; letter-spacing:-0.03em; color:#fff;">
+            Track your<br>
+            <span style="background: linear-gradient(135deg, #F06A35, #f59e0b); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">website build</span><br>
+            like a pro.
+          </div>
+          <div style="margin-top:20px; font-size:22px; color:rgba(255,255,255,0.55); font-weight:400; line-height:1.5;">
+            Free drag-and-drop Kanban board.<br>No login. No server. Works instantly.
+          </div>
+        </div>
+
+        <!-- Kanban mockup -->
+        <div class="kanban-mockup" style="width:100%;">
+          <!-- Backlog -->
+          <div class="kol" style="width:195px; flex-shrink:0;">
+            <div class="kol-header"><div class="kol-dot" style="background:#9ca3af;"></div> Backlog</div>
+            <div class="kcard">
+              <div class="kcard-tag tag-page">Page</div><br>Contact Us
+              <div class="progress-bar"><div class="progress-fill" style="width:0%;background:#9ca3af;"></div></div>
+            </div>
+            <div class="kcard">
+              <div class="kcard-tag tag-page">Page</div><br>Blog Index
+            </div>
+          </div>
+          <!-- In Dev -->
+          <div class="kol" style="width:195px; flex-shrink:0;">
+            <div class="kol-header"><div class="kol-dot" style="background:#F06A35;"></div> In Dev</div>
+            <div class="kcard">
+              <div class="kcard-tag tag-dev">Dev</div><br>Homepage Hero
+              <div class="progress-bar"><div class="progress-fill" style="width:70%;background:#F06A35;"></div></div>
+            </div>
+            <div class="kcard">
+              <div class="kcard-tag tag-design">Design</div><br>Services Section
+              <div class="progress-bar"><div class="progress-fill" style="width:45%;background:#8b5cf6;"></div></div>
+            </div>
+          </div>
+          <!-- Review -->
+          <div class="kol" style="width:195px; flex-shrink:0;">
+            <div class="kol-header"><div class="kol-dot" style="background:#f59e0b;"></div> Review</div>
+            <div class="kcard">
+              <div class="kcard-tag tag-design">Design</div><br>About Page
+              <div class="progress-bar"><div class="progress-fill" style="width:90%;background:#f59e0b;"></div></div>
+            </div>
+          </div>
+          <!-- Live -->
+          <div class="kol" style="width:195px; flex-shrink:0;">
+            <div class="kol-header"><div class="kol-dot" style="background:#10b981;"></div> Live</div>
+            <div class="kcard">
+              <div class="kcard-tag tag-live">Live</div><br>Homepage
+              <div class="progress-bar"><div class="progress-fill" style="width:100%;background:#10b981;"></div></div>
+            </div>
+            <div class="kcard">
+              <div class="kcard-tag tag-live">Live</div><br>Portfolio
+              <div class="progress-bar"><div class="progress-fill" style="width:100%;background:#10b981;"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pills row -->
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <div class="pill"><span style="color:#F06A35;">⠿</span> Drag & Drop</div>
+          <div class="pill"><span style="color:#10b981;">↓</span> Auto-Saves</div>
+          <div class="pill"><span style="color:#6366f1;">⊞</span> 6 Templates</div>
+          <div class="pill"><span style="color:#f59e0b;">⬡</span> No Login</div>
+        </div>
+      </div>
+
+      <!-- BOTTOM: Links -->
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div class="divider"></div>
+        <div style="display:flex; align-items:center; justify-content:space-between; padding-top:8px;">
+          <div class="url-chip">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#F06A35" stroke-width="1.5"/><path d="M7 1c-2 2-2 8 0 12M7 1c2 2 2 8 0 12M1 7h12" stroke="#F06A35" stroke-width="1.5"/></svg>
+            flowboard.vel-ai-au.com
+          </div>
+          <div class="gh-chip">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            github.com/bamah075/Flowboard
+          </div>
+        </div>
+        <div class="plugin-chip" style="align-self:flex-start;">
+          /plugin marketplace add bamah075/Flowboard
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- CARD 2: LANDSCAPE 1200×630 (Twitter/X OG card, LinkedIn share) -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div style="margin-top: 60px;">
+  <div class="label">Landscape 1200×630 — Twitter/X · LinkedIn share · OG preview</div>
+  <div class="card-landscape" id="ls">
+    <div class="bg-grid" style="background-size:50px 50px;"></div>
+    <div class="bg-glow glow-orange" style="width:400px;height:400px;top:-150px;left:-80px;"></div>
+    <div class="bg-glow glow-purple" style="width:350px;height:350px;bottom:-100px;right:-80px;"></div>
+    <div class="noise"></div>
+
+    <div style="position:absolute; inset:0; display:flex; align-items:center; padding:60px;">
+
+      <!-- LEFT -->
+      <div style="flex:1; display:flex; flex-direction:column; justify-content:center; gap:28px; padding-right:60px; border-right:1px solid rgba(255,255,255,0.08);">
+        <div class="logo-mark">
+          <div class="logo-icon" style="width:52px;height:52px;border-radius:14px;">
+            <svg width="28" height="28" viewBox="0 0 26 26" fill="none">
+              <rect x="2" y="4" width="5" height="18" rx="2" fill="white" opacity="0.9"/>
+              <rect x="10.5" y="8" width="5" height="14" rx="2" fill="white" opacity="0.9"/>
+              <rect x="19" y="2" width="5" height="22" rx="2" fill="white" opacity="0.6"/>
+            </svg>
+          </div>
+          <div>
+            <div class="logo-text-main" style="font-size:30px; color:#fff;">FlowBoard</div>
+            <div class="logo-text-sub">by Vel AI Consulting</div>
+          </div>
+        </div>
+
+        <div style="font-size:42px; font-weight:900; line-height:1.1; letter-spacing:-0.03em; color:#fff;">
+          Free Kanban for<br>
+          <span style="background: linear-gradient(135deg, #F06A35, #f59e0b); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">website projects.</span>
+        </div>
+        <div style="font-size:16px; color:rgba(255,255,255,0.5); line-height:1.6;">
+          Drag-and-drop. Auto-saves. No login.<br>Open it and you're in.
+        </div>
+
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <div class="url-chip" style="font-size:13px; padding:7px 16px;">
+            flowboard.vel-ai-au.com
+          </div>
+          <div class="badge-free">Free</div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Kanban mini -->
+      <div style="width:480px; padding-left:50px; display:flex; flex-direction:column; gap:20px;">
+        <div class="kanban-mockup" style="transform:scale(0.9); transform-origin:top left;">
+          <div class="kol" style="width:130px;">
+            <div class="kol-header" style="font-size:9px;"><div class="kol-dot" style="background:#F06A35;"></div> In Dev</div>
+            <div class="kcard"><div class="kcard-tag tag-dev">Dev</div><br>Homepage
+              <div class="progress-bar"><div class="progress-fill" style="width:70%;background:#F06A35;"></div></div>
+            </div>
+            <div class="kcard"><div class="kcard-tag tag-design">Design</div><br>Services
+              <div class="progress-bar"><div class="progress-fill" style="width:40%;background:#8b5cf6;"></div></div>
+            </div>
+          </div>
+          <div class="kol" style="width:130px;">
+            <div class="kol-header" style="font-size:9px;"><div class="kol-dot" style="background:#f59e0b;"></div> Review</div>
+            <div class="kcard"><div class="kcard-tag tag-design">Design</div><br>About Page
+              <div class="progress-bar"><div class="progress-fill" style="width:90%;background:#f59e0b;"></div></div>
+            </div>
+          </div>
+          <div class="kol" style="width:130px;">
+            <div class="kol-header" style="font-size:9px;"><div class="kol-dot" style="background:#10b981;"></div> Live</div>
+            <div class="kcard"><div class="kcard-tag tag-live">Live</div><br>Homepage
+              <div class="progress-bar"><div class="progress-fill" style="width:100%;background:#10b981;"></div></div>
+            </div>
+            <div class="kcard"><div class="kcard-tag tag-live">Live</div><br>Portfolio
+              <div class="progress-bar"><div class="progress-fill" style="width:100%;background:#10b981;"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <div class="gh-chip" style="font-size:12px; padding:7px 14px; align-self:flex-start;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            github.com/bamah075/Flowboard
+          </div>
+          <div class="plugin-chip" style="align-self:flex-start; font-size:11px; padding:7px 14px;">
+            /plugin marketplace add bamah075/Flowboard
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- CARD 3: STORY 1080×1920 (Instagram / Facebook Stories) -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div style="margin-top: 80px;">
+  <div class="label">Story 1080×1920 — Instagram / Facebook Stories</div>
+  <div class="card-story" id="st">
+    <div class="bg-grid" style="background-size:80px 80px;"></div>
+    <div class="bg-glow glow-orange" style="width:800px;height:800px;top:-300px;left:-200px;"></div>
+    <div class="bg-glow glow-purple" style="width:600px;height:600px;bottom:-200px;right:-200px;"></div>
+    <div class="bg-glow glow-teal" style="width:400px;height:400px;top:50%;left:50%;"></div>
+    <div class="noise"></div>
+
+    <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:space-between; padding:120px 80px;">
+
+      <!-- TOP: Logo -->
+      <div style="display:flex; flex-direction:column; align-items:center; gap:20px;">
+        <div style="display:flex; flex-direction:column; align-items:center; gap:16px;">
+          <div class="logo-icon" style="width:80px;height:80px;border-radius:22px;">
+            <svg width="42" height="42" viewBox="0 0 26 26" fill="none">
+              <rect x="2" y="4" width="5" height="18" rx="2" fill="white" opacity="0.9"/>
+              <rect x="10.5" y="8" width="5" height="14" rx="2" fill="white" opacity="0.9"/>
+              <rect x="19" y="2" width="5" height="22" rx="2" fill="white" opacity="0.6"/>
+            </svg>
+          </div>
+          <div style="text-align:center;">
+            <div class="logo-text-main" style="font-size:52px; color:#fff;">FlowBoard</div>
+            <div class="logo-text-sub" style="font-size:18px;">by Vel AI Consulting</div>
+          </div>
+        </div>
+        <div class="badge-free" style="font-size:14px; padding:6px 18px;">Free Forever</div>
+      </div>
+
+      <!-- MIDDLE: Headline + Mockup + Pills -->
+      <div style="display:flex; flex-direction:column; align-items:center; gap:52px; width:100%;">
+
+        <div style="text-align:center;">
+          <div style="font-size:96px; font-weight:900; line-height:0.95; letter-spacing:-0.04em; color:#fff; text-align:center;">
+            Track your<br>
+            <span style="background: linear-gradient(135deg, #F06A35, #f59e0b); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">website<br>build</span><br>
+            like a pro.
+          </div>
+          <div style="margin-top:28px; font-size:28px; color:rgba(255,255,255,0.5); line-height:1.5; text-align:center;">
+            Drag-and-drop Kanban.<br>No login. No server.
+          </div>
+        </div>
+
+        <!-- Large kanban mockup -->
+        <div class="kanban-mockup" style="transform:scale(1.5); transform-origin:top center; margin-bottom:120px; justify-content:center;">
+          <div class="kol" style="width:160px;">
+            <div class="kol-header"><div class="kol-dot" style="background:#6366f1;"></div> Planning</div>
+            <div class="kcard"><div class="kcard-tag tag-page">Page</div><br>Services<div class="progress-bar"><div class="progress-fill" style="width:20%;background:#6366f1;"></div></div></div>
+          </div>
+          <div class="kol" style="width:160px;">
+            <div class="kol-header"><div class="kol-dot" style="background:#F06A35;"></div> In Dev</div>
+            <div class="kcard"><div class="kcard-tag tag-dev">Dev</div><br>Homepage<div class="progress-bar"><div class="progress-fill" style="width:65%;background:#F06A35;"></div></div></div>
+            <div class="kcard"><div class="kcard-tag tag-design">Design</div><br>About<div class="progress-bar"><div class="progress-fill" style="width:40%;background:#8b5cf6;"></div></div></div>
+          </div>
+          <div class="kol" style="width:160px;">
+            <div class="kol-header"><div class="kol-dot" style="background:#10b981;"></div> Live</div>
+            <div class="kcard"><div class="kcard-tag tag-live">Live</div><br>Portfolio<div class="progress-bar"><div class="progress-fill" style="width:100%;background:#10b981;"></div></div></div>
+            <div class="kcard"><div class="kcard-tag tag-live">Live</div><br>Homepage<div class="progress-bar"><div class="progress-fill" style="width:100%;background:#10b981;"></div></div></div>
+          </div>
+        </div>
+
+        <!-- Feature pills grid -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; width:100%;">
+          <div class="pill" style="font-size:18px; padding:14px 20px; justify-content:center;">Drag & Drop</div>
+          <div class="pill" style="font-size:18px; padding:14px 20px; justify-content:center;">Auto-Saves</div>
+          <div class="pill" style="font-size:18px; padding:14px 20px; justify-content:center;">6 Templates</div>
+          <div class="pill" style="font-size:18px; padding:14px 20px; justify-content:center;">No Login</div>
+        </div>
+      </div>
+
+      <!-- BOTTOM: Links -->
+      <div style="display:flex; flex-direction:column; align-items:center; gap:18px; width:100%;">
+        <div class="divider" style="width:100%;"></div>
+        <div class="url-chip" style="font-size:22px; padding:14px 30px;">
+          <svg width="18" height="18" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#F06A35" stroke-width="1.5"/><path d="M7 1c-2 2-2 8 0 12M7 1c2 2 2 8 0 12M1 7h12" stroke="#F06A35" stroke-width="1.5"/></svg>
+          flowboard.vel-ai-au.com
+        </div>
+        <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap; justify-content:center;">
+          <div class="gh-chip" style="font-size:17px; padding:10px 20px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            github.com/bamah075/Flowboard
+          </div>
+        </div>
+        <div class="plugin-chip" style="font-size:17px; padding:12px 22px;">
+          /plugin marketplace add bamah075/Flowboard
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
